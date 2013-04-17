@@ -18,26 +18,27 @@ public class Guard extends Agent {
     @Override
     public void init(State state) {
         state.variables.put("Door", "closed");
-        state.events.add(new Event(5d, "Guard", "openTheDoor"));
-        goBack(state, 5d);
-    }
-
-    public void openTheDoor(State state, Double t) {
-        state.variables.put("Door", "open");
-    }
-
-    public void yesToSmoke(State state, Double t) {
-        state.variables.put("GuardAvailable", false);
-        _model.scheduleEvent(new Event(t + 2 + _rand.nextInt(7), "Guard", "goBack"));
-    }
-
-    public void noToSmoke(State state, Double t) {
-        if (_rand.nextBoolean()) yesToSmoke(state, t);
-        else goBack(state, t);
-    }
-
-    public void goBack(State state, Double t) {
         state.variables.put("GuardAvailable", true);
-        _model.scheduleEvent(new Event(t + 25 + _rand.nextInt(10), "Cashier2", "requestToSmoke"));
+        state.addEvent(new Event(5d, "Guard", "openTheDoor"));
+        state.addEvent(new Event(25 + _rand.nextInt(10), "Cashier2", "requestToSmoke"));
+    }
+
+    public void openTheDoor(Double t) {
+        _model.getState().variables.put("Door", "open");
+    }
+
+    public void yesToSmoke(Double t) {
+        _model.getState().variables.put("GuardAvailable", false);
+        _model.getState().addEvent(new Event(t + 2 + _rand.nextInt(7), "Guard", "goBack"));
+    }
+
+    public void noToSmoke(Double t) {
+        if (_rand.nextBoolean()) yesToSmoke(t);
+        else goBack(t);
+    }
+
+    public void goBack(Double t) {
+        _model.getState().variables.put("GuardAvailable", true);
+        _model.getState().addEvent(new Event(t + 25 + _rand.nextInt(10), "Cashier2", "requestToSmoke"));
     }
 }
