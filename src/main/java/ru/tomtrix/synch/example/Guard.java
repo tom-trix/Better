@@ -11,8 +11,8 @@ import ru.tomtrix.synch.platform.*;
 @SuppressWarnings("unused")
 public class Guard extends Agent {
 
-    public Guard(AbstractModel model) {
-        super(model);
+    public Guard(AbstractModel model, String name) {
+        super(model, name);
     }
 
     @Override
@@ -21,15 +21,21 @@ public class Guard extends Agent {
         state.variables.put("GuardAvailable", true);
         state.addEvent(new Event(5d, "Guard", "openTheDoor"));
         state.addEvent(new Event(25 + _rand.nextInt(10), "Cashier2", "requestToSmoke"));
+        state.addEvent(new Event(85 + _rand.nextInt(10), "Guard", "goWC"));
     }
 
     public void openTheDoor(Double t) {
         _model.getState().variables.put("Door", "open");
     }
 
+    public void goBack(Double t) {
+        _model.getState().variables.put("GuardAvailable", true);
+    }
+
     public void yesToSmoke(Double t) {
         _model.getState().variables.put("GuardAvailable", false);
         _model.getState().addEvent(new Event(t + 2 + _rand.nextInt(7), "Guard", "goBack"));
+        _model.getState().addEvent(new Event(t + 35 + _rand.nextInt(10), "Cashier2", "requestToSmoke"));
     }
 
     public void noToSmoke(Double t) {
@@ -37,8 +43,12 @@ public class Guard extends Agent {
         else goBack(t);
     }
 
-    public void goBack(Double t) {
-        _model.getState().variables.put("GuardAvailable", true);
-        _model.getState().addEvent(new Event(t + 25 + _rand.nextInt(10), "Cashier2", "requestToSmoke"));
+    public void goWC(Double t) {
+        _model.getState().variables.put("GuardAvailable", false);
+        _model.getState().addEvent(new Event(t + 1, "Guard", "goBack"));
+    }
+
+    public void suspect(Double t) {
+
     }
 }
