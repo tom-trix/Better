@@ -3,10 +3,7 @@ package ru.tomtrix.synch.example;
 import ru.tomtrix.synch.platform.AbstractModel;
 
 /**
- * Created with IntelliJ IDEA.
- * User: tom-trix
- * Date: 4/15/13
- * Time: 12:04 PM
+ * Supermarket example
  */
 public class Starter {
 

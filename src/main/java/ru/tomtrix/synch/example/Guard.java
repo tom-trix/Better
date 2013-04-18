@@ -2,12 +2,6 @@ package ru.tomtrix.synch.example;
 
 import ru.tomtrix.synch.platform.*;
 
-/**
- * Created with IntelliJ IDEA.
- * User: tom-trix
- * Date: 4/16/13
- * Time: 12:52 PM
- */
 @SuppressWarnings("unused")
 public class Guard extends Agent {
 
@@ -19,36 +13,36 @@ public class Guard extends Agent {
     public void init(State state) {
         state.variables.put("Door", "closed");
         state.variables.put("GuardAvailable", true);
-        state.addEvent(new Event(5d, "Guard", "openTheDoor"));
-        state.addEvent(new Event(25 + _rand.nextInt(10), "Cashier2", "requestToSmoke"));
-        state.addEvent(new Event(85 + _rand.nextInt(10), "Guard", "goWC"));
+        state.addEvent(new Event(5d, _name, "openTheDoor", _name));
+        state.addEvent(new Event(25 + _rand.nextInt(10), "Cashier2", "requestToSmoke", _name));
+        state.addEvent(new Event(85 + _rand.nextInt(10), _name, "goWC", _name));
     }
 
-    public void openTheDoor(Double t) {
+    public void openTheDoor(Double t, String sender) {
         _model.getState().variables.put("Door", "open");
     }
 
-    public void goBack(Double t) {
+    public void goBack(Double t, String sender) {
         _model.getState().variables.put("GuardAvailable", true);
     }
 
-    public void yesToSmoke(Double t) {
+    public void yesToSmoke(Double t, String sender) {
         _model.getState().variables.put("GuardAvailable", false);
-        _model.getState().addEvent(new Event(t + 2 + _rand.nextInt(7), "Guard", "goBack"));
-        _model.getState().addEvent(new Event(t + 35 + _rand.nextInt(10), "Cashier2", "requestToSmoke"));
+        _model.getState().addEvent(new Event(t + 2 + _rand.nextInt(7), _name, "goBack", _name));
+        _model.getState().addEvent(new Event(t + 35 + _rand.nextInt(10), "Cashier2", "requestToSmoke", _name));
     }
 
-    public void noToSmoke(Double t) {
-        if (_rand.nextBoolean()) yesToSmoke(t);
-        else goBack(t);
+    public void noToSmoke(Double t, String sender) {
+        if (_rand.nextBoolean()) yesToSmoke(t, sender);
+        else goBack(t, sender);
     }
 
-    public void goWC(Double t) {
+    public void goWC(Double t, String sender) {
         _model.getState().variables.put("GuardAvailable", false);
-        _model.getState().addEvent(new Event(t + 1, "Guard", "goBack"));
+        _model.getState().addEvent(new Event(t + 1, _name, "goBack", _name));
     }
 
-    public void suspect(Double t) {
+    public void suspect(Double t, String sender) {
 
     }
 }

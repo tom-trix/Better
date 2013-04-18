@@ -4,10 +4,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Created with IntelliJ IDEA.
- * User: tom-trix
- * Date: 4/16/13
- * Time: 10:57 AM
+ * State
  */
 public class State {
 

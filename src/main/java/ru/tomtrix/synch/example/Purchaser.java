@@ -7,12 +7,6 @@ import ru.tomtrix.synch.platform.State;
 
 import java.util.Map;
 
-/**
- * Created with IntelliJ IDEA.
- * User: tom-trix
- * Date: 4/17/13
- * Time: 11:56 PM
- */
 @SuppressWarnings("unused")
 public class Purchaser extends Agent {
 
@@ -24,25 +18,36 @@ public class Purchaser extends Agent {
 
     @Override
     public void init(State state) {
-        state.addEvent(new Event(5 + _rand.nextInt(30), _name, "appear"));
+        Map<String, Object> vars = _model.getState().variables;
+        vars.put("Purchasers", vars.containsKey("Purchasers") ? (int)vars.get("Purchasers") + 1 : 1);
+        state.addEvent(new Event(5 + _rand.nextInt(30), _name, "appear", _name));
     }
 
-    public void appear(Double t) {
-        _model.getState().addEvent(new Event(t + 1 + _rand.nextInt(5), _name, "bringGoods"));
+    public void appear(Double t, String sender) {
+        _model.getState().addEvent(new Event(t + 1 + _rand.nextInt(5), _name, "bringGoods", _name));
     }
 
-    public void bringGoods(Double t) {
+    public void bringGoods(Double t, String sender) {
         Map<String, Object> vars = _model.getState().variables;
         if (_rand.nextDouble()*_tasteForTheft > 0.3) {
             vars.put("Thefts", vars.containsKey("Thefts") ? (int)vars.get("Thefts") + 1 : 1);
-            _model.getState().addEvent(new Event(t +1, "Guard", "suspect"));
+            _model.getState().addEvent(new Event(t +1, "Guard", "suspect", _name));
         }
         boolean finish = _rand.nextDouble() > 0.8;
-        _model.getState().addEvent(new Event(t + 1 + _rand.nextInt(5), _name, finish ? "goToCashdesk" : "bringGoods"));
+        _model.getState().addEvent(new Event(t + 1 + _rand.nextInt(5), _name, finish ? "goToCashdesk" : "bringGoods", _name));
     }
 
-    public void goToCashdesk(Double t) {
+    public void goToCashdesk(Double t, String sender) {
         String cashier = String.format("Cashier%d", _rand.nextBoolean() ? 1 : 2);
-        _model.getState().addEvent(new Event(t + 1, cashier, "servePurchaser"));
+        _model.getState().addEvent(new Event(t + 1, cashier, "servePurchaser", _name));
+    }
+
+    public void cashOrCashless(Double t, String sender) {
+        _model.getState().addEvent(new Event(t + 1, sender, "cash" + (_rand.nextBoolean() ? "less" : ""), _name));
+    }
+
+    public void accepted(Double t, String sender) {
+        _model.getState().variables.put("Purchasers", (int)_model.getState().variables.get("Purchasers") - 1);
+        _model.getState().addEvent(new Event(t + 5 + _rand.nextInt(30), _name, "appear", _name));
     }
 }

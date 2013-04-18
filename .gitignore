@@ -1,3 +1,11 @@
 # Idea
 .idea/*
 *.iml
+
+#target
+target/1/*
+target/2/*
+target/classes/*
+target/test-classes/*
+target/surefire-reports/*
+target/maven-archiver/*

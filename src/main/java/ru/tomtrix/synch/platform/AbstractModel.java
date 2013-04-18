@@ -7,10 +7,7 @@ import akka.actor.Cancellable;
 import ru.tomtrix.synch.*;
 
 /**
- * Created with IntelliJ IDEA.
- * User: tom-trix
- * Date: 4/16/13
- * Time: 10:56 AM
+ * Abstract Model
  */
 public class AbstractModel extends JavaModel<State> {
 
@@ -31,7 +28,7 @@ public class AbstractModel extends JavaModel<State> {
                 else if (value instanceof Agent)
                     try {
                         Agent agent = (Agent) value;
-                        agent.getClass().getMethod(event.action, Double.class).invoke(agent, event.t);
+                        agent.getClass().getMethod(event.action, Double.class, String.class).invoke(agent, event.t, event.sender);
                     } catch (Exception e) {logger().error("Error in reflection", e);}
                 else throw new RuntimeException(String.format("Value = %s", value));
                 getState().fingerprint += 1;
