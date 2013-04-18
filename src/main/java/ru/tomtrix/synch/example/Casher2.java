@@ -12,9 +12,9 @@ public class Casher2 extends Casher1 {
     }
 
     public void requestToSmoke(Double t, String sender) {
-        boolean agree = _rand.nextDouble() > 0.4;
+        boolean agree = rand(1) > 0.4;
         _model.getState().variables.put(isAvailable, !agree);
         _model.getState().addEvent(new Event(t + 1, sender, agree ? "yesToSmoke" : "noToSmoke", _name));
-        if (agree) _model.getState().addEvent(new Event(t + 2 + _rand.nextInt(7), _name, "goBack", _name));
+        if (agree) _model.getState().addEvent(new Event(t + 2 + rand(7), _name, "goBack", _name));
     }
 }

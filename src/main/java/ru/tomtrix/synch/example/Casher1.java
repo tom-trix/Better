@@ -19,7 +19,7 @@ public class Casher1 extends Agent {
         state.variables.put(isAvailable, true);
         state.variables.put("TotalCash", 0);
         state.variables.put("TotalCashless", 0);
-        state.addEvent(new Event(75 + _rand.nextInt(10), _name, "goWC", _name));
+        state.addEvent(new Event(75 + rand(10), _name, "goWC", _name));
     }
 
     public void goWC(Double t, String sender) {
@@ -32,16 +32,16 @@ public class Casher1 extends Agent {
     }
 
     public void servePurchaser(Double t, String sender) {
-        _model.getState().addEvent(new Event(t + _rand.nextInt(6), sender, "cashOrCashless", _name));
+        _model.getState().addEvent(new Event(t + rand(6), sender, "cashOrCashless", _name));
     }
 
     public void cash(Double t, String sender) {
         _model.getState().variables.put("TotalCash", (int)_model.getState().variables.get("TotalCash") + 1);
-        _model.getState().addEvent(new Event(t + 1 + _rand.nextInt(2), sender, "accepted", _name));
+        _model.getState().addEvent(new Event(t + 0.5 + rand(2), sender, "accepted", _name));
     }
 
     public void cashless(Double t, String sender) {
         _model.getState().variables.put("TotalCashless", (int)_model.getState().variables.get("TotalCashless") + 1);
-        _model.getState().addEvent(new Event(t + 1 + _rand.nextInt(3), sender, "accepted", _name));
+        _model.getState().addEvent(new Event(t + 0.7 + rand(3), sender, "accepted", _name));
     }
 }

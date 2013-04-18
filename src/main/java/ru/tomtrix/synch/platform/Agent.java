@@ -6,7 +6,17 @@ import java.util.Random;
  * Agent
  */
 public abstract class Agent {
-    protected final Random _rand = new Random(System.currentTimeMillis());
+
+    private static final Random _random = new Random(System.currentTimeMillis());
+
+    public static boolean rand() {
+        return _random.nextBoolean();
+    }
+
+    public static double rand(int n) {
+        return _random.nextInt(n) + _random.nextDouble();
+    }
+
     protected final AbstractModel _model;
     protected final String _name;
 

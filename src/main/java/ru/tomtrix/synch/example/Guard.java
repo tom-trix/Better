@@ -14,8 +14,8 @@ public class Guard extends Agent {
         state.variables.put("Door", "closed");
         state.variables.put("GuardAvailable", true);
         state.addEvent(new Event(5d, _name, "openTheDoor", _name));
-        state.addEvent(new Event(25 + _rand.nextInt(10), "Cashier2", "requestToSmoke", _name));
-        state.addEvent(new Event(85 + _rand.nextInt(10), _name, "goWC", _name));
+        state.addEvent(new Event(25 + rand(10), "Cashier2", "requestToSmoke", _name));
+        state.addEvent(new Event(85 + rand(9), _name, "goWC", _name));
     }
 
     public void openTheDoor(Double t, String sender) {
@@ -28,12 +28,12 @@ public class Guard extends Agent {
 
     public void yesToSmoke(Double t, String sender) {
         _model.getState().variables.put("GuardAvailable", false);
-        _model.getState().addEvent(new Event(t + 2 + _rand.nextInt(7), _name, "goBack", _name));
-        _model.getState().addEvent(new Event(t + 35 + _rand.nextInt(10), "Cashier2", "requestToSmoke", _name));
+        _model.getState().addEvent(new Event(t + 2 + rand(7), _name, "goBack", _name));
+        _model.getState().addEvent(new Event(t + 35 + rand(10), "Cashier2", "requestToSmoke", _name));
     }
 
     public void noToSmoke(Double t, String sender) {
-        if (_rand.nextBoolean()) yesToSmoke(t, sender);
+        if (rand()) yesToSmoke(t, sender);
         else goBack(t, sender);
     }
 
