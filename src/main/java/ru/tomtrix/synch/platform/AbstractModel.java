@@ -1,6 +1,5 @@
 package ru.tomtrix.synch.platform;
 
-import java.util.*;
 import java.util.concurrent.*;
 import scala.concurrent.duration.Duration;
 import akka.actor.Cancellable;
@@ -11,41 +10,46 @@ import ru.tomtrix.synch.*;
  */
 public class AbstractModel extends JavaModel<State> {
 
-    protected transient final Map<String, Object> _agents = new ConcurrentHashMap<>();
     private transient Cancellable _timer;
+    protected final transient State _state = new State();
 
     @Override
     public State startModelling() {
-        _timer = system().scheduler().schedule(Duration.Zero(), Duration.create(30, TimeUnit.MILLISECONDS), new Runnable() {
+        _timer = system().scheduler().schedule(Duration.Zero(), Duration.create(20, TimeUnit.MILLISECONDS), new Runnable() {
             @Override
             public void run() {
-                if (getState().events.isEmpty()) return;
-                final Event event = getState().events.remove(0);
+                // поиск агента с минимальной временной меткой
+                Agent cur_agent = null;
+                for (Agent agent : getState().agents.values()) {
+                    Double t = agent.getCurrentTimestamp();
+                    if (t == null) continue;
+                    if (cur_agent == null || t < cur_agent.getCurrentTimestamp())
+                        cur_agent = agent;
+                }
+                if (cur_agent == null) return;
+
+                // обработка события
+                Event event = cur_agent.popEvent();
                 logger().info(String.format("Found event: %s", event));
-                final Object value = _agents.get(event.agent);
-                if (value instanceof String)
-                    sendMessage(value.toString(), new EventMessage(event.t, actorname(), event));
-                else if (value instanceof Agent)
+                if (getState().remoteAgents.containsKey(event.agent))
+                    sendMessage(getState().remoteAgents.get(event.agent), new EventMessage(event.t, actorname(), event));
+                else if (getState().agents.containsKey(event.agent))
                     try {
-                        Agent agent = (Agent) value;
-                        agent.getClass().getMethod(event.action, Double.class, String.class).invoke(agent, event.t, event.sender);
+                        Agent receiver = getState().agents.get(event.agent);
+                        receiver.getClass().getMethod(event.action, Double.class, String.class).invoke(receiver, event.t, event.sender);
                     } catch (Exception e) {logger().error("Error in reflection", e);}
-                else throw new RuntimeException(String.format("Value = %s", value));
+                else throw new RuntimeException("What a fuck, baby?");
                 getState().fingerprint += 1;
                 addTime(event.t - getTime());
             }
         }, system().dispatcher());
-        State state = new State();
-        for (Object obj : _agents.values())
-            if (obj instanceof Agent)
-                ((Agent) obj).init(state);
-        return state;
+        return _state;
     }
 
     @Override
     public void onMessageReceived() {
         EventMessage m = (EventMessage) popMessage().get();
-        getState().events.add((Event) m.data());
+        getState().addEvent((Event) m.data());
     }
 
     @Override

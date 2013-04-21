@@ -1,6 +1,8 @@
 package ru.tomtrix.synch.platform;
 
-import java.util.Random;
+import java.util.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Agent
@@ -14,16 +16,32 @@ public abstract class Agent {
     }
 
     public static double rand(int n) {
-        return _random.nextInt(n) + _random.nextDouble();
+        return _random.nextInt(n) + BigDecimal.valueOf(_random.nextDouble()).setScale(2, RoundingMode.UP).doubleValue();
     }
 
-    protected final AbstractModel _model;
+    private final AbstractModel _model;
     protected final String _name;
+    protected final List<Event> _events = Collections.synchronizedList(new ArrayList<Event>());
 
-    public Agent(AbstractModel model, String name) {
+    public Agent(AbstractModel  model, String name) {
         _model = model;
         _name = name;
     }
 
-    public abstract void init(State state);
+    public Map<String, Object> getVariables() {
+        return _model.getState() != null ? _model.getState().variables : _model._state.variables;
+    }
+
+    synchronized public void addEvent(Event event) {
+        _events.add(event);
+        Collections.sort(_events);
+    }
+
+    synchronized public Double getCurrentTimestamp() {
+        return _events.isEmpty() ? null : _events.get(0).t;
+    }
+
+    synchronized public Event popEvent() {
+        return _events.remove(0);
+    }
 }
