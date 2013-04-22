@@ -1,11 +1,20 @@
 package ru.tomtrix.synch.example;
 
+import java.util.*;
 import ru.tomtrix.synch.platform.*;
+
 
 @SuppressWarnings("unused")
 public class Casher1 extends Agent {
 
     protected String isAvailable = "Cashier1Available";
+
+    @Override
+    public Agent cloneObject() {
+        Casher1 result = new Casher1(_model, _name);
+        result._events = Collections.synchronizedList(new ArrayList<>(_events));
+        return result;
+    }
 
     public Casher1(AbstractModel model, String name) {
         super(model, name);

@@ -1,24 +1,28 @@
 package ru.tomtrix.synch.example;
 
-import ru.tomtrix.synch.platform.AbstractModel;
-import ru.tomtrix.synch.platform.Agent;
-import ru.tomtrix.synch.platform.Event;
-import ru.tomtrix.synch.platform.State;
+import java.util.*;
+import ru.tomtrix.synch.platform.*;
 
-import java.util.Map;
 
 @SuppressWarnings("unused")
 public class Purchaser extends Agent {
 
     private double _tasteForTheft = rand(1)/2;
 
+    @Override
+    public Agent cloneObject() {
+        Purchaser result = new Purchaser(_model, _name);
+        result._events = Collections.synchronizedList(new ArrayList<>(_events));
+        return result;
+    }
+
     public Purchaser(AbstractModel model, String name) {
         super(model, name);
-        getVariables().put("Purchasers", getVariables().containsKey("Purchasers") ? (int)getVariables().get("Purchasers") + 1 : 1);
         addEvent(new Event(5 + rand(30), _name, "appear", _name));
     }
 
     public void appear(Double t, String sender) {
+        getVariables().put("Purchasers", getVariables().containsKey("Purchasers") ? (int)getVariables().get("Purchasers") + 1 : 1);
         addEvent(new Event(t + 1 + rand(5), _name, "bringGoods", _name));
     }
 

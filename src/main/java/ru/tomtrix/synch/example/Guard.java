@@ -1,9 +1,18 @@
 package ru.tomtrix.synch.example;
 
+import java.util.*;
 import ru.tomtrix.synch.platform.*;
+
 
 @SuppressWarnings("unused")
 public class Guard extends Agent {
+
+    @Override
+    public Agent cloneObject() {
+        Guard result = new Guard(_model, _name);
+        result._events = Collections.synchronizedList(new ArrayList<>(_events));
+        return result;
+    }
 
     public Guard(AbstractModel  model, String name) {
         super(model, name);

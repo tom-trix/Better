@@ -19,9 +19,11 @@ public abstract class Agent {
         return _random.nextInt(n) + BigDecimal.valueOf(_random.nextDouble()).setScale(2, RoundingMode.UP).doubleValue();
     }
 
-    private final AbstractModel _model;
+    protected final AbstractModel _model;
     protected final String _name;
-    protected final List<Event> _events = Collections.synchronizedList(new ArrayList<Event>());
+    protected List<Event> _events = Collections.synchronizedList(new ArrayList<Event>());
+
+    public abstract Agent cloneObject();
 
     public Agent(AbstractModel  model, String name) {
         _model = model;
@@ -29,7 +31,7 @@ public abstract class Agent {
     }
 
     public Map<String, Object> getVariables() {
-        return _model.getState() != null ? _model.getState().variables : _model._state.variables;
+        return _model.getState().variables;
     }
 
     synchronized public void addEvent(Event event) {
