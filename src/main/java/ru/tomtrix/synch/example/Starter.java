@@ -1,6 +1,6 @@
 package ru.tomtrix.synch.example;
 
-import ru.tomtrix.synch.platform.AbstractModel;
+import ru.tomtrix.synch.simplebetter.AbstractModel;
 
 /**
  * Supermarket example
@@ -9,21 +9,16 @@ public class Starter {
 
     class Model_1 extends AbstractModel {
         public Model_1() {
-            _state.variables.put("Door", "closed");
-            _state.variables.put("TotalCash", 0);
-            _state.variables.put("TotalCashless", 0);
-            _state.variables.put("GuardAvailable", true);
-            _state.variables.put("Cashier1isAvailable", true);
-            _state.agents.put("Guard", new Guard(this, "Guard"));
-            _state.agents.put("Cashier1", new Casher1(this, "Cashier1"));
-            _state.agents.put("Purchaser0", new Purchaser(this, "Purchaser0"));
-            _state.agents.put("Purchaser1", new Purchaser(this, "Purchaser1"));
-            _state.agents.put("Purchaser2", new Purchaser(this, "Purchaser2"));
-            _state.agents.put("Purchaser3", new Purchaser(this, "Purchaser3"));
-            _state.agents.put("Purchaser4", new Purchaser(this, "Purchaser4"));
-            _state.agents.put("Purchaser5", new Purchaser(this, "Purchaser5"));
-            _state.agents.put("Purchaser6", new Purchaser(this, "Purchaser6"));
-            _state.agents.put("Purchaser7", new Purchaser(this, "Purchaser7"));
+            _state.agents.put("Guard", new Guard("Guard"));
+            _state.agents.put("Cashier1", new Casher1("Cashier1"));
+            _state.agents.put("Purchaser0", new Purchaser("Purchaser0"));
+            _state.agents.put("Purchaser1", new Purchaser("Purchaser1"));
+            _state.agents.put("Purchaser2", new Purchaser("Purchaser2"));
+            _state.agents.put("Purchaser3", new Purchaser("Purchaser3"));
+            _state.agents.put("Purchaser4", new Purchaser("Purchaser4"));
+            _state.agents.put("Purchaser5", new Purchaser("Purchaser5"));
+            _state.agents.put("Purchaser6", new Purchaser("Purchaser6"));
+            _state.agents.put("Purchaser7", new Purchaser("Purchaser7"));
             _state.remoteAgents.put("Cashier2", "node2");
             _state.remoteAgents.put("Purchaser8", "node2");
             _state.remoteAgents.put("Purchaser9", "node2");
@@ -38,18 +33,15 @@ public class Starter {
 
     class Model_2 extends AbstractModel {
         public Model_2() {
-            _state.variables.put("TotalCash", 0);
-            _state.variables.put("TotalCashless", 0);
-            _state.variables.put("Cashier2isAvailable", true);
-            _state.agents.put("Cashier2", new Casher2(this, "Cashier2"));
-            _state.agents.put("Purchaser8", new Purchaser(this, "Purchaser8"));
-            _state.agents.put("Purchaser9", new Purchaser(this, "Purchaser9"));
-            _state.agents.put("PurchaserA", new Purchaser(this, "PurchaserA"));
-            _state.agents.put("PurchaserB", new Purchaser(this, "PurchaserB"));
-            _state.agents.put("PurchaserC", new Purchaser(this, "PurchaserC"));
-            _state.agents.put("PurchaserD", new Purchaser(this, "PurchaserD"));
-            _state.agents.put("PurchaserE", new Purchaser(this, "PurchaserE"));
-            _state.agents.put("PurchaserF", new Purchaser(this, "PurchaserF"));
+            _state.agents.put("Cashier2", new Casher2("Cashier2"));
+            _state.agents.put("Purchaser8", new Purchaser("Purchaser8"));
+            _state.agents.put("Purchaser9", new Purchaser("Purchaser9"));
+            _state.agents.put("PurchaserA", new Purchaser("PurchaserA"));
+            _state.agents.put("PurchaserB", new Purchaser("PurchaserB"));
+            _state.agents.put("PurchaserC", new Purchaser("PurchaserC"));
+            _state.agents.put("PurchaserD", new Purchaser("PurchaserD"));
+            _state.agents.put("PurchaserE", new Purchaser("PurchaserE"));
+            _state.agents.put("PurchaserF", new Purchaser("PurchaserF"));
             _state.remoteAgents.put("Guard", "node1");
             _state.remoteAgents.put("Cashier1", "node1");
             _state.remoteAgents.put("Purchaser0", "node1");

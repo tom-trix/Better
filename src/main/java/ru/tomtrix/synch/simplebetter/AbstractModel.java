@@ -1,4 +1,4 @@
-package ru.tomtrix.synch.platform;
+package ru.tomtrix.synch.simplebetter;
 
 import java.util.concurrent.*;
 import scala.concurrent.duration.Duration;
@@ -36,9 +36,9 @@ public class AbstractModel extends JavaModel<State> {
                 else if (getState().agents.containsKey(event.agent))
                     try {
                         Agent receiver = getState().agents.get(event.agent);
-                        receiver.getClass().getMethod(event.action, Double.class, String.class).invoke(receiver, event.t, event.sender);
+                        receiver.getClass().getMethod(event.action, Event.class).invoke(receiver, event);
                     } catch (Exception e) {logger().error("Error in reflection", e);}
-                else throw new RuntimeException("What a fuck, baby?");
+                else throw new RuntimeException(String.format("No agent found (%s)", event.agent));
                 getState().fingerprint += 1;
                 addTime(event.t - getTime());
             }
@@ -47,14 +47,15 @@ public class AbstractModel extends JavaModel<State> {
     }
 
     @Override
-    public void onMessageReceived() {
-        EventMessage m = (EventMessage) popMessage().get();
-        getState().addEvent((Event) m.data());
-    }
-
-    @Override
     public scala.collection.immutable.Map<Category, Object> stopModelling() {
         _timer.cancel();
         return super.stopModelling();
+    }
+
+    @Override
+    public void onMessageReceived() {
+        EventMessage m = (EventMessage) popMessage().get();
+        Event e = (Event) m.data();
+        getState().agents.get(e.agent).addEvent(e);
     }
 }

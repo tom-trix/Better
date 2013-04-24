@@ -1,51 +1,43 @@
 package ru.tomtrix.synch.example;
 
 import java.util.*;
-import ru.tomtrix.synch.platform.*;
-
+import ru.tomtrix.synch.simplebetter.*;
 
 @SuppressWarnings("unused")
 public class Guard extends Agent {
 
     @Override
     public Agent cloneObject() {
-        Guard result = new Guard(_model, _name);
+        Guard result = new Guard(_name);
         result._events = Collections.synchronizedList(new ArrayList<>(_events));
         return result;
     }
 
-    public Guard(AbstractModel  model, String name) {
-        super(model, name);
-        addEvent(new Event(5d, _name, "openTheDoor", _name));
-        addEvent(new Event(25 + rand(10), "Cashier2", "requestToSmoke", _name));
-        addEvent(new Event(85 + rand(9), _name, "goWC", _name));
+    public Guard(String name) {
+        super(name);
+        addEvent(new Event(5d, "SuperMarket", "setVariable", "Door#open", _name));
+        addEvent(new Event(25 + rand(10), "Cashier2", "requestToSmoke", "", _name));
+        addEvent(new Event(65 + rand(9), _name, "goWC", "", _name));
     }
 
-    public void openTheDoor(Double t, String sender) {
-        getVariables().put("Door", "open");
+    public void responseToSmoke(Event event) {
+        if (event.arg.equals("true") || rand()) {
+            addEvent(new Event(event.t + rand(1), "SuperMarket", "setVariable", "GuardAvailable#false", _name));
+            addEvent(new Event(event.t + 2 + rand(7), _name, "goBack", "", _name));
+        }
+        addEvent(new Event(event.t + 35 + rand(10), "Cashier2", "requestToSmoke", "", _name));
     }
 
-    public void goBack(Double t, String sender) {
-        getVariables().put("GuardAvailable", true);
+    public void goWC(Event event) {
+        addEvent(new Event(event.t + rand(1), "SuperMarket", "setVariable", "GuardAvailable#false", _name));
+        addEvent(new Event(event.t + 1 + rand(3), _name, "goBack", "", _name));
     }
 
-    public void yesToSmoke(Double t, String sender) {
-        getVariables().put("GuardAvailable", false);
-        addEvent(new Event(t + 2 + rand(7), _name, "goBack", _name));
-        addEvent(new Event(t + 35 + rand(10), "Cashier2", "requestToSmoke", _name));
+    public void goBack(Event event) {
+        addEvent(new Event(event.t, "SuperMarket", "setVariable", "GuardAvailable#true", _name));
     }
 
-    public void noToSmoke(Double t, String sender) {
-        if (rand()) yesToSmoke(t, sender);
-        else goBack(t, sender);
-    }
-
-    public void goWC(Double t, String sender) {
-        getVariables().put("GuardAvailable", false);
-        addEvent(new Event(t + 1, _name, "goBack", _name));
-    }
-
-    public void suspect(Double t, String sender) {
+    public void suspect(Event event) {
 
     }
 }

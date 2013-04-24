@@ -1,8 +1,7 @@
 package ru.tomtrix.synch.example;
 
 import java.util.*;
-import ru.tomtrix.synch.platform.*;
-
+import ru.tomtrix.synch.simplebetter.*;
 
 @SuppressWarnings("unused")
 public class Purchaser extends Agent {
@@ -11,41 +10,39 @@ public class Purchaser extends Agent {
 
     @Override
     public Agent cloneObject() {
-        Purchaser result = new Purchaser(_model, _name);
+        Purchaser result = new Purchaser(_name);
+        result._tasteForTheft = _tasteForTheft;
         result._events = Collections.synchronizedList(new ArrayList<>(_events));
         return result;
     }
 
-    public Purchaser(AbstractModel model, String name) {
-        super(model, name);
-        addEvent(new Event(5 + rand(30), _name, "appear", _name));
+    public Purchaser(String name) {
+        super(name);
+        addEvent(new Event(5 + rand(30), _name, "appear", "", _name));
     }
 
-    public void appear(Double t, String sender) {
-        getVariables().put("Purchasers", getVariables().containsKey("Purchasers") ? (int)getVariables().get("Purchasers") + 1 : 1);
-        addEvent(new Event(t + 1 + rand(5), _name, "bringGoods", _name));
+    public void appear(Event event) {
+        _tasteForTheft = rand(1)/2;
+        addEvent(new Event(event.t + rand(1), "SuperMarket", "incVariable", "TotalPurchasers", _name));
+        addEvent(new Event(event.t + rand(1), "SuperMarket", "incVariable", "Purchasers", _name));
+        addEvent(new Event(event.t + 1 + rand(5), _name, "bringGoods", "", _name));
     }
 
-    public void bringGoods(Double t, String sender) {
-        if (rand(1)*_tasteForTheft > 0.3) {
-            getVariables().put("Thefts", getVariables().containsKey("Thefts") ? (int)getVariables().get("Thefts") + 1 : 1);
-            addEvent(new Event(t +1, "Guard", "suspect", _name));
+    public void bringGoods(Event event) {
+        if (rand(1)*_tasteForTheft > 0.35) {
+            addEvent(new Event(event.t + rand(1), "SuperMarket", "incVariable", "Thefts", _name));
+            addEvent(new Event(event.t +1, "Guard", "suspect", "", _name));
         }
-        boolean finish = rand(1) > 0.8;
-        addEvent(new Event(t + 1 + rand(5), _name, finish ? "goToCashdesk" : "bringGoods", _name));
+        addEvent(new Event(event.t + 1 + rand(5), _name, rand(1)>0.8 ? "goToCashdesk" : "bringGoods", "", _name));
     }
 
-    public void goToCashdesk(Double t, String sender) {
+    public void goToCashdesk(Event event) {
         String cashier = String.format("Cashier%d", rand() ? 1 : 2);
-        addEvent(new Event(t + 1, cashier, "servePurchaser", _name));
+        addEvent(new Event(event.t + rand(1), cashier, "servePurchaser", "cash" + (rand() ? "less" : ""), _name));
     }
 
-    public void cashOrCashless(Double t, String sender) {
-        addEvent(new Event(t + 1, sender, "cash" + (rand() ? "less" : ""), _name));
-    }
-
-    public void accepted(Double t, String sender) {
-        getVariables().put("Purchasers", (int)getVariables().get("Purchasers") - 1);
-        addEvent(new Event(t + 5 + rand(30), _name, "appear", _name));
+    public void accepted(Event event) {
+        addEvent(new Event(event.t + rand(1), "SuperMarket", "decVariable", "Purchasers", _name));
+        addEvent(new Event(event.t + 5 + rand(30), _name, "appear", "", _name));
     }
 }

@@ -1,8 +1,6 @@
-package ru.tomtrix.synch.platform;
+package ru.tomtrix.synch.simplebetter;
 
 import java.util.*;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 /**
  * Agent
@@ -16,22 +14,16 @@ public abstract class Agent {
     }
 
     public static double rand(int n) {
-        return _random.nextInt(n) + BigDecimal.valueOf(_random.nextDouble()).setScale(2, RoundingMode.UP).doubleValue();
+        return _random.nextInt(n) + Double.valueOf(((Double)_random.nextDouble()).toString().substring(0, 4));
     }
 
-    protected final AbstractModel _model;
-    protected final String _name;
-    protected List<Event> _events = Collections.synchronizedList(new ArrayList<Event>());
+    public final String _name;
+    public List<Event> _events = Collections.synchronizedList(new ArrayList<Event>());
 
     public abstract Agent cloneObject();
 
-    public Agent(AbstractModel  model, String name) {
-        _model = model;
+    public Agent(String name) {
         _name = name;
-    }
-
-    public Map<String, Object> getVariables() {
-        return _model.getState().variables;
     }
 
     synchronized public void addEvent(Event event) {
