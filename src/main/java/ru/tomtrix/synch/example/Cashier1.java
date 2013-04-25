@@ -1,6 +1,5 @@
 package ru.tomtrix.synch.example;
 
-import java.util.*;
 import ru.tomtrix.synch.simplebetter.*;
 
 @SuppressWarnings("unused")
@@ -8,15 +7,8 @@ public class Cashier1 extends Agent {
 
     protected String isAvailable = "Cashier1Available";
 
-    @Override
-    public Agent cloneObject() {
-        Cashier1 result = new Cashier1(_name, _modelRef);
-        result._events = Collections.synchronizedList(new ArrayList<>(_events));
-        return result;
-    }
-
-    public Cashier1(String name, AbstractModel model) {
-        super(name, model);
+    public Cashier1(String name) {
+        super(name);
         addEvents(new Event(75 + rand(10), _name, "goWC", "", _name));
     }
 

@@ -8,16 +8,8 @@ public class Purchaser extends Agent {
 
     private double _tasteForTheft = rand(1)/2;
 
-    @Override
-    public Agent cloneObject() {
-        Purchaser result = new Purchaser(_name, _modelRef);
-        result._tasteForTheft = _tasteForTheft;
-        result._events = Collections.synchronizedList(new ArrayList<>(_events));
-        return result;
-    }
-
-    public Purchaser(String name, AbstractModel model) {
-        super(name, model);
+    public Purchaser(String name) {
+        super(name);
         addEvents(new Event(5 + rand(30), _name, "appear", "", _name));
     }
 

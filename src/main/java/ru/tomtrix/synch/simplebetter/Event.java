@@ -23,7 +23,7 @@ public class Event implements Comparable<Event>, Serializable {
 
     @Override
     public int compareTo(Event o) {
-        return (int) (t - o.t);
+        return (int) Math.signum(t - o.t); //DON'T FORGET ABOUT SIGN(X)
     }
 
     @Override

@@ -11,7 +11,7 @@ import ru.tomtrix.synch.*;
 public class AbstractModel extends JavaModel<State> {
 
     private transient Cancellable _timer;
-    protected final transient State _state = new State();
+    protected final State _state = new State();
 
     @Override
     public State startModelling() {

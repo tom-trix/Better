@@ -8,15 +8,8 @@ public class Cashier2 extends Cashier1 {
 
     protected String isAvailable = "Cashier2Available";
 
-    @Override
-    public Agent cloneObject() {
-        Cashier2 result = new Cashier2(_name, _modelRef);
-        result._events = Collections.synchronizedList(new ArrayList<>(_events));
-        return result;
-    }
-
-    public Cashier2(String name, AbstractModel model) {
-        super(name, model);
+    public Cashier2(String name) {
+        super(name);
     }
 
     public void requestToSmoke(Event event) {
