@@ -28,6 +28,6 @@ public class Event implements Comparable<Event>, Serializable {
 
     @Override
     public String toString() {
-        return String.format("%.2f: %s.%s(%s)", t, agent, action, arg);
+        return String.format("%.2f: %s.%s(%s) by %s", t, agent, action, arg, sender);
     }
 }

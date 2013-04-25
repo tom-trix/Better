@@ -14,7 +14,10 @@ public class State {
 
     @Override
     public String toString() {
-        return String.format("State #%d;", fingerprint);
+        StringBuilder sb = new StringBuilder(String.format("State #%d; Agent events: ", fingerprint));
+        for (Agent agent : agents.values())
+            sb.append(agent._events.size()).append(", ");
+        return sb.toString();
     }
 
     @SuppressWarnings("unused")

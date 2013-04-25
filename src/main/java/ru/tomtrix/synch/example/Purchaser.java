@@ -10,39 +10,40 @@ public class Purchaser extends Agent {
 
     @Override
     public Agent cloneObject() {
-        Purchaser result = new Purchaser(_name);
+        Purchaser result = new Purchaser(_name, _modelRef);
         result._tasteForTheft = _tasteForTheft;
         result._events = Collections.synchronizedList(new ArrayList<>(_events));
         return result;
     }
 
-    public Purchaser(String name) {
-        super(name);
-        addEvent(new Event(5 + rand(30), _name, "appear", "", _name));
+    public Purchaser(String name, AbstractModel model) {
+        super(name, model);
+        addEvents(new Event(5 + rand(30), _name, "appear", "", _name));
     }
 
     public void appear(Event event) {
         _tasteForTheft = rand(1)/2;
-        addEvent(new Event(event.t + rand(1), "SuperMarket", "incVariable", "TotalPurchasers", _name));
-        addEvent(new Event(event.t + rand(1), "SuperMarket", "incVariable", "Purchasers", _name));
-        addEvent(new Event(event.t + 1 + rand(5), _name, "bringGoods", "", _name));
+        addEvents(new Event(event.t + rand(1), "SuperMarket", "incVariable", "TotalPurchasers", _name),
+                new Event(event.t + rand(1), "SuperMarket", "incVariable", "Purchasers", _name),
+                new Event(event.t + 1 + rand(5), _name, "bringGoods", "", _name));
     }
 
     public void bringGoods(Event event) {
-        if (rand(1)*_tasteForTheft > 0.35) {
-            addEvent(new Event(event.t + rand(1), "SuperMarket", "incVariable", "Thefts", _name));
-            addEvent(new Event(event.t +1, "Guard", "suspect", "", _name));
-        }
-        addEvent(new Event(event.t + 1 + rand(5), _name, rand(1)>0.8 ? "goToCashdesk" : "bringGoods", "", _name));
+        List<Event> events = new ArrayList<>(Arrays.asList(new Event(event.t + 1 + rand(5), _name, rand(1)>0.8 ? "goToCashdesk" : "bringGoods", "", _name)));
+        if (rand(1)*_tasteForTheft > 0.35)
+            events.addAll(Arrays.asList(
+                    new Event(event.t + rand(1), "SuperMarket", "incVariable", "Thefts", _name),
+                    new Event(event.t +1, "Guard", "suspect", "", _name)));
+        addEvents(events);
     }
 
     public void goToCashdesk(Event event) {
         String cashier = String.format("Cashier%d", rand() ? 1 : 2);
-        addEvent(new Event(event.t + rand(1), cashier, "servePurchaser", "cash" + (rand() ? "less" : ""), _name));
+        addEvents(new Event(event.t + rand(1), cashier, "servePurchaser", "cash" + (rand() ? "less" : ""), _name));
     }
 
     public void accepted(Event event) {
-        addEvent(new Event(event.t + rand(1), "SuperMarket", "decVariable", "Purchasers", _name));
-        addEvent(new Event(event.t + 5 + rand(30), _name, "appear", "", _name));
+        addEvents(new Event(event.t + rand(1), "SuperMarket", "decVariable", "Purchasers", _name),
+                new Event(event.t + 5 + rand(30), _name, "appear", "", _name));
     }
 }

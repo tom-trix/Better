@@ -15,32 +15,36 @@ public class AbstractModel extends JavaModel<State> {
 
     @Override
     public State startModelling() {
+        final Model<State> self = this;
         _timer = system().scheduler().schedule(Duration.Zero(), Duration.create(20, TimeUnit.MILLISECONDS), new Runnable() {
             @Override
             public void run() {
-                // поиск агента с минимальной временной меткой
-                Agent cur_agent = null;
-                for (Agent agent : getState().agents.values()) {
-                    Double t = agent.getCurrentTimestamp();
-                    if (t == null) continue;
-                    if (cur_agent == null || t < cur_agent.getCurrentTimestamp())
-                        cur_agent = agent;
-                }
-                if (cur_agent == null) return;
+               synchronized (self) {
+                    // поиск агента с минимальной временной меткой
+                    Agent cur_agent = null;
+                    for (Agent agent : getState().agents.values()) {
+                        Double t = agent.getCurrentTimestamp();
+                        if (t == null) continue;
+                        if (cur_agent == null || t < cur_agent.getCurrentTimestamp())
+                            cur_agent = agent;
+                    }
+                    if (cur_agent == null) return;
 
-                // обработка события
-                Event event = cur_agent.popEvent();
-                logger().info(String.format("Found event: %s", event));
-                if (getState().remoteAgents.containsKey(event.agent))
-                    sendMessage(getState().remoteAgents.get(event.agent), new EventMessage(event.t, actorname(), event));
-                else if (getState().agents.containsKey(event.agent))
-                    try {
-                        Agent receiver = getState().agents.get(event.agent);
-                        receiver.getClass().getMethod(event.action, Event.class).invoke(receiver, event);
-                    } catch (Exception e) {logger().error("Error in reflection", e);}
-                else throw new RuntimeException(String.format("No agent found (%s)", event.agent));
-                getState().fingerprint += 1;
-                addTime(event.t - getTime());
+                    // обработка события
+                    Event event = cur_agent.popEvent();
+                    logger().info(String.format("Found event: %s", event));
+                    if (event.t < getTime()) throw new AssertionError(String.format("event.t (%.2f) < getTime (%.2f)", event.t, getTime()));
+                    if (getState().remoteAgents.containsKey(event.agent))
+                        sendMessage(getState().remoteAgents.get(event.agent), new EventMessage(event.t, actorname(), event));
+                    else if (getState().agents.containsKey(event.agent))
+                        try {
+                            Agent receiver = getState().agents.get(event.agent);
+                            receiver.getClass().getMethod(event.action, Event.class).invoke(receiver, event);
+                        } catch (Exception e) {logger().error("Error in reflection", e);}
+                    else throw new RuntimeException(String.format("No agent found (%s)", event.agent));
+                    getState().fingerprint += 1;
+                    addTime(event.t - getTime());
+               }
             }
         }, system().dispatcher());
         return _state;
@@ -56,6 +60,6 @@ public class AbstractModel extends JavaModel<State> {
     public void onMessageReceived() {
         EventMessage m = (EventMessage) popMessage().get();
         Event e = (Event) m.data();
-        getState().agents.get(e.agent).addEvent(e);
+        getState().agents.get(e.agent).addEvents(e);
     }
 }

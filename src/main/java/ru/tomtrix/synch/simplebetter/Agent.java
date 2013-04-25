@@ -17,25 +17,41 @@ public abstract class Agent {
         return _random.nextInt(n) + Double.valueOf(((Double)_random.nextDouble()).toString().substring(0, 4));
     }
 
+    protected transient final AbstractModel _modelRef;
     public final String _name;
     public List<Event> _events = Collections.synchronizedList(new ArrayList<Event>());
 
     public abstract Agent cloneObject();
 
-    public Agent(String name) {
+    public Agent(String name, AbstractModel model) {
         _name = name;
+        _modelRef = model;
     }
 
-    synchronized public void addEvent(Event event) {
-        _events.add(event);
-        Collections.sort(_events);
+    public void addEvents(Event ... events) {
+        addEvents(Arrays.asList(events));
     }
 
-    synchronized public Double getCurrentTimestamp() {
-        return _events.isEmpty() ? null : _events.get(0).t;
+    public void addEvents(Collection<Event> events) {
+        synchronized (_modelRef) {
+            _events.addAll(events);
+            Collections.sort(_events);
+            StringBuilder sb = new StringBuilder("Added events to ").append(_name).append(". Now: ");
+            for (Event event : _events)
+                sb.append(event.t).append(", ");
+            _modelRef.logger().info(sb.toString());
+        }
     }
 
-    synchronized public Event popEvent() {
-        return _events.remove(0);
+    public Double getCurrentTimestamp() {
+        synchronized (_modelRef) {
+            return _events.isEmpty() ? null : _events.get(0).t;
+        }
+    }
+
+    public Event popEvent() {
+        synchronized (_modelRef) {
+            return _events.remove(0);
+        }
     }
 }
