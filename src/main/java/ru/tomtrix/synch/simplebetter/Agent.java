@@ -2,7 +2,6 @@ package ru.tomtrix.synch.simplebetter;
 
 import java.util.*;
 import scala.Serializable;
-import ru.tomtrix.synch.ApacheLogger;
 
 /**
  * Agent
@@ -33,10 +32,6 @@ public abstract class Agent implements Serializable {
     synchronized public void addEvents(Collection<Event> events) {
         _events.addAll(events);
         Collections.sort(_events);
-        StringBuilder sb = new StringBuilder("Added events to ").append(_name).append(". Now: ");
-        for (Event event : _events)
-            sb.append(event.t).append(", ");
-        ApacheLogger.logger().info(sb.toString());
     }
 
     synchronized public Double getCurrentTimestamp() {

@@ -15,9 +15,9 @@ public class State implements Serializable {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(String.format("State #%d; Agent events: ", fingerprint));
+        int total = 0;
         for (Agent agent : agents.values())
-            sb.append(agent._events.size()).append(", ");
-        return sb.toString();
+            total += agent._events.size();
+        return String.format("State #%d; Total events: %d", fingerprint, total);
     }
 }
