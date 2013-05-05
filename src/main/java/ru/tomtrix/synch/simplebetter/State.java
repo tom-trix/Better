@@ -15,17 +15,8 @@ public class State implements HashSerializable {
     public Map<String, Agent> agents = new ConcurrentHashMap<>();
 
     @Override
-    public scala.collection.Seq<String> toSetOfHash() {
-        /*Set<String> s = new HashSet<>();
-        for (Agent agent : agents.values())
-            for (Event event : agent._events)
-                s.add(event.toHash());
-        return new Java2Scala<String>().asSet(s);*/
-        ListBuffer<String> buffer = new ListBuffer<>();
-        for (Agent agent : agents.values())
-            for (Event event : agent._events)
-                buffer.$plus$eq(event.toHash());
-        return buffer;
+    public String toHash() {
+        return "";
     }
 
     @Override

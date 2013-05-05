@@ -33,7 +33,7 @@ public class AbstractModel extends JavaModel<State> {
 
                     // обработка события
                     Event event = cur_agent.popEvent();
-                    Gatherer.addEvent(event.t, event.toSetOfHash());
+                    Gatherer.addEvent(event.t, event.toHash());
                     logger().info(String.format("Found event: %s", event));
                     if (event.t < getTime()) throw new AssertionError(String.format("event.t (%.2f) < getTime (%.2f)", event.t, getTime()));
                     if (getState().remoteAgents.containsKey(event.agent))
