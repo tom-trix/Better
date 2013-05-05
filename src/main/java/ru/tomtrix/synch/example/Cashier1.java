@@ -23,6 +23,6 @@ public class Cashier1 extends Agent {
 
     public void servePurchaser(Event event) {
         addEvents(new Event(event.t, "SuperMarket", "incVariable", event.arg.equals("cash") ? "TotalCash" : "TotalCashless", _name),
-                  new Event(event.t + 0.5 + rand(2), event.sender, "accepted", "", _name));
+                  new Event(event.t + 0.5 + rand(2), event.author, "accepted", "", _name));
     }
 }

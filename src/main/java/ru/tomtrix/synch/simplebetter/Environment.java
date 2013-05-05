@@ -20,7 +20,7 @@ public abstract class Environment extends Agent {
     }
 
     public void checkVariable(Event event) {
-        addEvents(new Event(event.t, event.sender, "variableIs", String.format("%s#%s", event.arg, _variables.get(event.arg)), _name));
+        addEvents(new Event(event.t, event.author, "variableIs", String.format("%s#%s", event.arg, _variables.get(event.arg)), _name));
     }
 
     public void incVariable(Event event) {

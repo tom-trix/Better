@@ -16,7 +16,7 @@ public class Cashier2 extends Cashier1 {
         Boolean agree = rand(1) > 0.4;
         List<Event> events = new ArrayList<>(Arrays.asList(
                 new Event(event.t, "SuperMarket", "setVariable", isAvailable + "#" + !agree, _name),
-                new Event(event.t + 1, event.sender, "responseToSmoke", agree.toString(), _name)));
+                new Event(event.t + 1, event.author, "responseToSmoke", agree.toString(), _name)));
         if (agree) events.add(new Event(event.t + 2 + rand(7), _name, "goBack", "", _name));
         addEvents(events);
     }
