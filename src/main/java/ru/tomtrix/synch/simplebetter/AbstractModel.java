@@ -1,7 +1,6 @@
 package ru.tomtrix.synch.simplebetter;
 
 import java.util.concurrent.*;
-import ru.tomtrix.synch.algorithms.Gatherer;
 import scala.concurrent.duration.Duration;
 import akka.actor.Cancellable;
 import ru.tomtrix.synch.*;
@@ -21,6 +20,8 @@ public class AbstractModel extends JavaModel<State> {
             @Override
             public void run() {
                synchronized (self) {
+                    if (getTime() > 200) {stopModelling(); return; }
+
                     // поиск агента с минимальной временной меткой
                     Agent cur_agent = null;
                     for (Agent agent : getState().agents.values()) {
@@ -29,14 +30,30 @@ public class AbstractModel extends JavaModel<State> {
                         if (cur_agent == null || t < cur_agent.getCurrentTimestamp())
                             cur_agent = agent;
                     }
-                    if (cur_agent == null) return;
+                    Double t1 = cur_agent != null ? cur_agent.getCurrentTimestamp() : null;
+
+                    // поглядим, есть ли что-то во входящей очереди
+                    Double t2 = null;
+                    try {
+                        t2 = peekMessage().get().t();
+                    } catch (Exception ignored) {}
+
+                    // выборка события с меньшей временной меткой
+                    Event event;
+                    if (t1 == null && t2 == null) return;
+                    else if (t1 == null) event = (Event) popMessage().get().data();
+                    else if (t2 == null) event = cur_agent.popEvent();
+                    else if (t2 <= t1) event = (Event) popMessage().get().data();
+                    else event = cur_agent.popEvent();
+
+
 
                     // обработка события
-                    Event event = cur_agent.popEvent();
-                    Gatherer.addEvent(event.t, event.toHash());
+                    boolean isRemote = getState().remoteAgents.containsKey(event.agent);
+                    registerEvent(getTime(), event.author, event.agent, event.action, isRemote, !getState().agents.containsKey(event.author));
                     logger().info(String.format("Found event: %s", event));
                     if (event.t < getTime()) throw new AssertionError(String.format("event.t (%.2f) < getTime (%.2f)", event.t, getTime()));
-                    if (getState().remoteAgents.containsKey(event.agent))
+                    if (isRemote)
                         sendMessage(getState().remoteAgents.get(event.agent), new EventMessage(event.t, actorname(), event));
                     else if (getState().agents.containsKey(event.agent))
                         try {
@@ -58,10 +75,10 @@ public class AbstractModel extends JavaModel<State> {
         return super.stopModelling();
     }
 
-    @Override
+    /*@Override
     public void onMessageReceived() {
         EventMessage m = (EventMessage) popMessage().get();
         Event e = (Event) m.data();
         getState().agents.get(e.agent).addEvents(e);
-    }
+    }*/
 }
