@@ -1,6 +1,8 @@
 package ru.tomtrix.synch.simplebetter;
 
 import java.util.concurrent.*;
+
+import ru.tomtrix.synch.algorithms.AgentEvent;
 import scala.concurrent.duration.Duration;
 import akka.actor.Cancellable;
 import ru.tomtrix.synch.*;
@@ -50,7 +52,7 @@ public class AbstractModel extends JavaModel<State> {
 
                     // обработка события
                     boolean isRemote = getState().remoteAgents.containsKey(event.agent);
-                    registerEvent(getTime(), event.author, event.agent, event.action, isRemote, !getState().agents.containsKey(event.author));
+                    registerEvent(event.t, new AgentEvent(event.author, event.agent, event.action), isRemote, !getState().agents.containsKey(event.author));
                     logger().info(String.format("Found event: %s", event));
                     if (event.t < getTime()) throw new AssertionError(String.format("event.t (%.2f) < getTime (%.2f)", event.t, getTime()));
                     if (isRemote)
@@ -67,6 +69,12 @@ public class AbstractModel extends JavaModel<State> {
             }
         }, system().dispatcher());
         return _state;
+    }
+
+    @Override
+    public AgentEvent convertRollback(EventMessage m) {
+        Event event = (Event) m.data();
+        return new AgentEvent(event.author, event.agent, event.action);
     }
 
     @Override
