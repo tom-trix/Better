@@ -13,6 +13,8 @@ import ru.tomtrix.synch.*;
 public class AbstractModel extends JavaModel<State> {
 
     private transient Cancellable _timer;
+    private transient volatile boolean _locked = false;
+    private transient volatile AgentEvent _deadlockEvent = null;
     protected final State _state = new State();
 
     @Override
@@ -22,49 +24,55 @@ public class AbstractModel extends JavaModel<State> {
             @Override
             public void run() {
                synchronized (self) {
-                    if (getTime() > 200) {stopModelling(); return; }
+                   if (_locked  && _deadlockEvent == null) return;
+                   if (getTime() > 200) {stopModelling(); return; }
 
-                    // поиск агента с минимальной временной меткой
-                    Agent cur_agent = null;
-                    for (Agent agent : getState().agents.values()) {
-                        Double t = agent.getCurrentTimestamp();
-                        if (t == null) continue;
-                        if (cur_agent == null || t < cur_agent.getCurrentTimestamp())
-                            cur_agent = agent;
-                    }
-                    Double t1 = cur_agent != null ? cur_agent.getCurrentTimestamp() : null;
+                   // поиск агента с минимальной временной меткой
+                   Agent cur_agent = null;
+                   for (Agent agent : getState().agents.values()) {
+                       Double t = agent.getCurrentTimestamp();
+                       if (t == null) continue;
+                       if (cur_agent == null || t < cur_agent.getCurrentTimestamp())
+                           cur_agent = agent;
+                   }
+                   Double t1 = cur_agent != null ? cur_agent.getCurrentTimestamp() : null;
 
-                    // поглядим, есть ли что-то во входящей очереди
-                    Double t2 = null;
-                    try {
-                        t2 = peekMessage().get().t();
-                    } catch (Exception ignored) {}
+                   // поглядим, есть ли что-то во входящей очереди
+                   Double t2 = null;
+                   try {
+                       t2 = peekMessage().get().t();
+                   } catch (Exception ignored) {}
 
-                    // выборка события с меньшей временной меткой
-                    Event event;
-                    if (t1 == null && t2 == null) return;
-                    else if (t1 == null) event = (Event) popMessage().get().data();
-                    else if (t2 == null) event = cur_agent.popEvent();
-                    else if (t2 <= t1) event = (Event) popMessage().get().data();
-                    else event = cur_agent.popEvent();
+                   // выборка события с меньшей временной меткой
+                   Event event;
+                   if (t1 == null && t2 == null) return;
+                   else if (t1 == null) event = (Event) popMessage().get().data();
+                   else if (t2 == null) event = cur_agent.popEvent();
+                   else if (t2 <= t1) event = (Event) popMessage().get().data();
+                   else event = cur_agent.popEvent();
 
+                   // обработка события
+                   boolean isRemote = getState().remoteAgents.containsKey(event.agent);
+                   logger().info(String.format("Found event: %s", event));
+                   if (event.t < getTime()) throw new AssertionError(String.format("event.t (%.2f) < getTime (%.2f)", event.t, getTime()));
+                   if (isRemote)
+                       sendMessage(getState().remoteAgents.get(event.agent), new EventMessage(event.t, actorname(), event));
+                   else if (getState().agents.containsKey(event.agent))
+                       try {
+                           Agent receiver = getState().agents.get(event.agent);
+                           receiver.getClass().getMethod(event.action, Event.class).invoke(receiver, event);
+                       } catch (Exception e) {logger().error("Error in reflection", e);}
+                   else throw new RuntimeException(String.format("No agent found (%s)", event.agent));
+                   getState().fingerprint += 1;
+                   registerEvent(event.t, new AgentEvent(event.author, event.agent, event.action), isRemote, !getState().agents.containsKey(event.author));
+                   addTime(event.t - getTime());
 
-
-                    // обработка события
-                    boolean isRemote = getState().remoteAgents.containsKey(event.agent);
-                    registerEvent(event.t, new AgentEvent(event.author, event.agent, event.action), isRemote, !getState().agents.containsKey(event.author));
-                    logger().info(String.format("Found event: %s", event));
-                    if (event.t < getTime()) throw new AssertionError(String.format("event.t (%.2f) < getTime (%.2f)", event.t, getTime()));
-                    if (isRemote)
-                        sendMessage(getState().remoteAgents.get(event.agent), new EventMessage(event.t, actorname(), event));
-                    else if (getState().agents.containsKey(event.agent))
-                        try {
-                            Agent receiver = getState().agents.get(event.agent);
-                            receiver.getClass().getMethod(event.action, Event.class).invoke(receiver, event);
-                        } catch (Exception e) {logger().error("Error in reflection", e);}
-                    else throw new RuntimeException(String.format("No agent found (%s)", event.agent));
-                    getState().fingerprint += 1;
-                    addTime(event.t - getTime());
+                   //
+                   if (_deadlockEvent != null)
+                       if (event.author.equals(_deadlockEvent.agent()) && event.agent.equals(_deadlockEvent.recipient()) && event.action.equals(_deadlockEvent.action())) {
+                           logger().debug(String.format("Deadlock event %s handled!", _deadlockEvent));
+                           _deadlockEvent = null;
+                       }
                }
             }
         }, system().dispatcher());
@@ -72,9 +80,30 @@ public class AbstractModel extends JavaModel<State> {
     }
 
     @Override
-    public AgentEvent convertRollback(EventMessage m) {
+    public AgentEvent convertToEvent(EventMessage m) {
         Event event = (Event) m.data();
         return new AgentEvent(event.author, event.agent, event.action);
+    }
+
+    @Override
+    public String convertToActor(AgentEvent e) {
+        return getState().remoteAgents.get(e.agent());
+    }
+
+    @Override
+    public void suspendModelling() {
+        _locked = true;
+    }
+
+    @Override
+    public void resumeModelling() {
+        _locked = false;
+    }
+
+    @Override
+    public void handleDeadlockMessage(DeadlockMessage m) {
+        if (_deadlockEvent != null) throw new RuntimeException(String.format("Deadlock event = %s (expected NULL)", _deadlockEvent));
+        _deadlockEvent = m.waitFor();
     }
 
     @Override
@@ -82,11 +111,4 @@ public class AbstractModel extends JavaModel<State> {
         _timer.cancel();
         return super.stopModelling();
     }
-
-    /*@Override
-    public void onMessageReceived() {
-        EventMessage m = (EventMessage) popMessage().get();
-        Event e = (Event) m.data();
-        getState().agents.get(e.agent).addEvents(e);
-    }*/
 }
