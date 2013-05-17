@@ -13,8 +13,7 @@ import ru.tomtrix.synch.*;
 public class AbstractModel extends JavaModel<State> {
 
     private transient Cancellable _timer;
-    private transient volatile boolean _locked = false;
-    private transient volatile AgentEvent _deadlockEvent = null;
+
     protected final State _state = new State();
 
     @Override
@@ -24,7 +23,7 @@ public class AbstractModel extends JavaModel<State> {
             @Override
             public void run() {
                synchronized (self) {
-                   if (_locked  && _deadlockEvent == null) return;
+                   if (getState().locked) return;
                    if (getTime() > 200) {stopModelling(); return; }
 
                    // поиск агента с минимальной временной меткой
@@ -68,10 +67,11 @@ public class AbstractModel extends JavaModel<State> {
                    addTime(event.t - getTime());
 
                    //
-                   if (_deadlockEvent != null)
-                       if (event.author.equals(_deadlockEvent.agent()) && event.agent.equals(_deadlockEvent.recipient()) && event.action.equals(_deadlockEvent.action())) {
-                           logger().debug(String.format("Deadlock event %s handled!", _deadlockEvent));
-                           _deadlockEvent = null;
+                   AgentEvent ae = getState().deadlockEvent;
+                   if (ae != null)
+                       if (event.author.equals(ae.agent()) && event.agent.equals(ae.recipient()) && event.action.equals(ae.action())) {
+                           logger().debug(String.format("Deadlock event %s handled!", ae));
+                           getState().deadlockEvent = null;
                        }
                }
             }
@@ -92,18 +92,18 @@ public class AbstractModel extends JavaModel<State> {
 
     @Override
     public void suspendModelling() {
-        _locked = true;
+        getState().locked = true;
     }
 
     @Override
     public void resumeModelling() {
-        _locked = false;
+        getState().locked = false;
     }
 
     @Override
-    public void handleDeadlockMessage(DeadlockMessage m) {
-        if (_deadlockEvent != null) throw new RuntimeException(String.format("Deadlock event = %s (expected NULL)", _deadlockEvent));
-        _deadlockEvent = m.waitFor();
+    public void handleDeadlockMessage() {
+        /*if (getState().deadlockEvent != null) throw new RuntimeException(String.format("Deadlock event = %s (expected NULL)", getState().deadlockEvent));
+        getState().deadlockEvent = m.waitFor();*/
     }
 
     @Override
