@@ -9,6 +9,10 @@ import ru.tomtrix.synch.simplebetter.*;
 public class SuperMarket extends Environment {
     public SuperMarket(String name) {
         super(name);
+    }
+
+    @Override
+    public void init() {
         _variables.put("Door", "closed");
         _variables.put("TotalCash", 0);
         _variables.put("TotalCashless", 0);

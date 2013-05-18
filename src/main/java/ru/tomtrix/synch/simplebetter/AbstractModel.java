@@ -1,11 +1,12 @@
 package ru.tomtrix.synch.simplebetter;
 
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.*;
-
-import ru.tomtrix.synch.algorithms.AgentEvent;
 import scala.concurrent.duration.Duration;
 import akka.actor.Cancellable;
 import ru.tomtrix.synch.*;
+import ru.tomtrix.synch.algorithms.AgentEvent;
 
 /**
  * Abstract Model
@@ -13,18 +14,19 @@ import ru.tomtrix.synch.*;
 public class AbstractModel extends JavaModel<State> {
 
     private transient Cancellable _timer;
-
-    protected final State _state = new State();
+    private volatile boolean _otherLocked = false;
+    protected transient Map<String, Agent> _agents = new TreeMap<>();
+    protected transient Map<String, String> _remoteAgents = new TreeMap<>();
 
     @Override
     public State startModelling() {
+        // запускаем таймер
         final Model<State> self = this;
         _timer = system().scheduler().schedule(Duration.Zero(), Duration.create(20, TimeUnit.MILLISECONDS), new Runnable() {
             @Override
             public void run() {
                synchronized (self) {
-                   if (getState().locked) return;
-                   if (getTime() > 200) {stopModelling(); return; }
+                   if (getState().locked) {logger().debug("I am locked!"); return;}
 
                    // поиск агента с минимальной временной меткой
                    Agent cur_agent = null;
@@ -53,6 +55,7 @@ public class AbstractModel extends JavaModel<State> {
                    // обработка события
                    boolean isRemote = getState().remoteAgents.containsKey(event.agent);
                    logger().info(String.format("Found event: %s", event));
+                   statEventHandled();
                    if (event.t < getTime()) throw new AssertionError(String.format("event.t (%.2f) < getTime (%.2f)", event.t, getTime()));
                    if (isRemote)
                        sendMessage(getState().remoteAgents.get(event.agent), new EventMessage(event.t, actorname(), event));
@@ -65,18 +68,14 @@ public class AbstractModel extends JavaModel<State> {
                    getState().fingerprint += 1;
                    registerEvent(event.t, new AgentEvent(event.author, event.agent, event.action), isRemote, !getState().agents.containsKey(event.author));
                    addTime(event.t - getTime());
-
-                   //
-                   AgentEvent ae = getState().deadlockEvent;
-                   if (ae != null)
-                       if (event.author.equals(ae.agent()) && event.agent.equals(ae.recipient()) && event.action.equals(ae.action())) {
-                           logger().debug(String.format("Deadlock event %s handled!", ae));
-                           getState().deadlockEvent = null;
-                       }
                }
             }
         }, system().dispatcher());
-        return _state;
+        // сброс агентов (вот почему запрещена инициализация в конструкторе: вдруг модель будет прогоняться 2 или более раз?)
+        for (Agent agent : _agents.values())
+            agent.flush();
+        // создаём новый экземпляр State (важно, если модель прогоняется 2 или более раз)
+        return new State(_agents, _remoteAgents);
     }
 
     @Override
@@ -91,8 +90,9 @@ public class AbstractModel extends JavaModel<State> {
     }
 
     @Override
-    public void suspendModelling() {
-        getState().locked = true;
+    synchronized public void suspendModelling() {
+        if (!_otherLocked)
+            getState().locked = true;
     }
 
     @Override
@@ -101,9 +101,14 @@ public class AbstractModel extends JavaModel<State> {
     }
 
     @Override
-    public void handleDeadlockMessage() {
-        /*if (getState().deadlockEvent != null) throw new RuntimeException(String.format("Deadlock event = %s (expected NULL)", getState().deadlockEvent));
-        getState().deadlockEvent = m.waitFor();*/
+    synchronized public void handleDeadlockMessage(DeadlockMessage m) {
+        logger().error(String.format("Found deadlock! otherLocked = %s", _otherLocked));
+        if (!getState().locked) {
+            if (m.isSuspended() && !_otherLocked) _otherLocked = true;
+            else if (!m.isSuspended() && _otherLocked) _otherLocked = false;
+            else logger().error(String.format("Wrong deadlock situation(1): m.suspended = %s, otherLocked = %s", m.isSuspended(), _otherLocked));
+        }
+        else logger().error("Wrong deadlock situation(2)");
     }
 
     @Override

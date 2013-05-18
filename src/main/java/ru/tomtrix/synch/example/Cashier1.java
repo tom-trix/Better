@@ -9,6 +9,10 @@ public class Cashier1 extends Agent {
 
     public Cashier1(String name) {
         super(name);
+    }
+
+    @Override
+    public void init() {
         addEvents(new Event(75 + rand(10), _name, "goWC", "", _name));
     }
 

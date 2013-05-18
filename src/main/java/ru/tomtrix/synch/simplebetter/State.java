@@ -2,24 +2,23 @@ package ru.tomtrix.synch.simplebetter;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import ru.tomtrix.synch.*;
-import ru.tomtrix.synch.algorithms.AgentEvent;
-import scala.collection.mutable.ListBuffer;
+import scala.Serializable;
+import ru.tomtrix.synch.ApacheLogger;
 
 /**
  * State
  */
-public class State implements HashSerializable {
+public class State implements Serializable {
 
     public long fingerprint = 0;
-    public Map<String, String> remoteAgents = new ConcurrentHashMap<>();
-    public Map<String, Agent> agents = new ConcurrentHashMap<>();
+    public Map<String, String> remoteAgents;
+    public Map<String, Agent> agents;
     public volatile boolean locked = false;
-    public AgentEvent deadlockEvent = null;
 
-    @Override
-    public String toHash() {
-        return "";
+    public State(Map<String, Agent> agents, Map<String, String> remoteAgents) {
+        this.agents = new ConcurrentHashMap<>(agents);
+        this.remoteAgents = new ConcurrentHashMap<>(remoteAgents);
+        ApacheLogger.logger().debug("State created! " + this);
     }
 
     @Override
@@ -27,6 +26,6 @@ public class State implements HashSerializable {
         int total = 0;
         for (Agent agent : agents.values())
             total += agent._events.size();
-        return String.format("State #%d; Total events: %d; Locked = %s; DeadlockEvent = %s", fingerprint, total, locked, deadlockEvent);
+        return String.format("State #%d; Total events: %d; Locked = %s", fingerprint, total, locked);
     }
 }

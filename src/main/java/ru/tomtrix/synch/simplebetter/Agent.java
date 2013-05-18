@@ -25,6 +25,8 @@ public abstract class Agent implements Serializable {
         _name = name;
     }
 
+    public abstract void init();
+
     public void addEvents(Event ... events) {
         addEvents(Arrays.asList(events));
     }
@@ -40,5 +42,10 @@ public abstract class Agent implements Serializable {
 
     synchronized public Event popEvent() {
         return _events.remove(0);
+    }
+
+    synchronized public void flush() {
+        _events.clear();
+        init();
     }
 }

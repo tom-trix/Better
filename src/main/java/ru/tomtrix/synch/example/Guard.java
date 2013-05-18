@@ -8,9 +8,13 @@ public class Guard extends Agent {
 
     public Guard(String name) {
         super(name);
+    }
+
+    @Override
+    public void init() {
         addEvents(new Event(5d, "SuperMarket", "setVariable", "Door#open", _name),
-                  new Event(25 + rand(10), "Cashier2", "requestToSmoke", "", _name),
-                  new Event(65 + rand(9), _name, "goWC", "", _name));
+                new Event(25 + rand(10), "Cashier2", "requestToSmoke", "", _name),
+                new Event(65 + rand(9), _name, "goWC", "", _name));
     }
 
     public void responseToSmoke(Event event) {

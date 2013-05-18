@@ -1,12 +1,11 @@
 package ru.tomtrix.synch.simplebetter;
 
-import ru.tomtrix.synch.ApacheLogger;
-import ru.tomtrix.synch.HashSerializable;
+import scala.Serializable;
 
 /**
  * Event
  */
-public class Event implements Comparable<Event>, HashSerializable {
+public class Event implements Comparable<Event>, Serializable {
 
     public final double t;
     public final String agent;
@@ -32,7 +31,7 @@ public class Event implements Comparable<Event>, HashSerializable {
         return String.format("%.2f: %s.%s(%s) by %s", t, agent, action, arg, author);
     }
 
-    @Override
+    /*@Override
     public String toHash() {
         StringBuilder result = new StringBuilder();
         switch (agent) {
@@ -99,5 +98,5 @@ public class Event implements Comparable<Event>, HashSerializable {
             default: ApacheLogger.logger().error(String.format("Author %s not found", author));
         }
         return result.toString();
-    }
+    }*/
 }

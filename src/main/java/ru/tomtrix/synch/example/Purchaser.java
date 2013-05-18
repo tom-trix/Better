@@ -10,6 +10,10 @@ public class Purchaser extends Agent {
 
     public Purchaser(String name) {
         super(name);
+    }
+
+    @Override
+    public void init() {
         addEvents(new Event(5 + rand(30), _name, "appear", "", _name));
     }
 
