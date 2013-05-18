@@ -13,7 +13,6 @@ public class State implements Serializable {
     public long fingerprint = 0;
     public Map<String, String> remoteAgents;
     public Map<String, Agent> agents;
-    public volatile boolean locked = false;
 
     public State(Map<String, Agent> agents, Map<String, String> remoteAgents) {
         this.agents = new ConcurrentHashMap<>(agents);
@@ -26,6 +25,6 @@ public class State implements Serializable {
         int total = 0;
         for (Agent agent : agents.values())
             total += agent._events.size();
-        return String.format("State #%d; Total events: %d; Locked = %s", fingerprint, total, locked);
+        return String.format("State #%d; Total events: %d", fingerprint, total);
     }
 }

@@ -14,19 +14,20 @@ import ru.tomtrix.synch.algorithms.AgentEvent;
 public class AbstractModel extends JavaModel<State> {
 
     private transient Cancellable _timer;
-    private volatile boolean _otherLocked = false;
+    private volatile boolean _locked = false;
     protected transient Map<String, Agent> _agents = new TreeMap<>();
     protected transient Map<String, String> _remoteAgents = new TreeMap<>();
 
     @Override
     public State startModelling() {
+        _locked = false;
         // запускаем таймер
         final Model<State> self = this;
         _timer = system().scheduler().schedule(Duration.Zero(), Duration.create(20, TimeUnit.MILLISECONDS), new Runnable() {
             @Override
             public void run() {
                synchronized (self) {
-                   if (getState().locked) {logger().debug("I am locked!"); return;}
+                   if (_locked) {logger().debug("I am locked!"); return;}
 
                    // поиск агента с минимальной временной меткой
                    Agent cur_agent = null;
@@ -56,7 +57,6 @@ public class AbstractModel extends JavaModel<State> {
                    boolean isRemote = getState().remoteAgents.containsKey(event.agent);
                    logger().info(String.format("Found event: %s", event));
                    statEventHandled();
-                   if (event.t < getTime()) throw new AssertionError(String.format("event.t (%.2f) < getTime (%.2f)", event.t, getTime()));
                    if (isRemote)
                        sendMessage(getState().remoteAgents.get(event.agent), new EventMessage(event.t, actorname(), event));
                    else if (getState().agents.containsKey(event.agent))
@@ -64,7 +64,7 @@ public class AbstractModel extends JavaModel<State> {
                            Agent receiver = getState().agents.get(event.agent);
                            receiver.getClass().getMethod(event.action, Event.class).invoke(receiver, event);
                        } catch (Exception e) {logger().error("Error in reflection", e);}
-                   else throw new RuntimeException(String.format("No agent found (%s)", event.agent));
+                   else logger().error(String.format("No agent found (%s)", event.agent));
                    getState().fingerprint += 1;
                    registerEvent(event.t, new AgentEvent(event.author, event.agent, event.action), isRemote, !getState().agents.containsKey(event.author));
                    addTime(event.t - getTime());
@@ -91,25 +91,24 @@ public class AbstractModel extends JavaModel<State> {
 
     @Override
     synchronized public void suspendModelling() {
-        if (!_otherLocked)
-            getState().locked = true;
+        _locked = true;
     }
 
     @Override
-    public void resumeModelling() {
-        getState().locked = false;
+    synchronized public void resumeModelling() {
+        _locked = false;
     }
 
-    @Override
+    /*@Override
     synchronized public void handleDeadlockMessage(DeadlockMessage m) {
-        logger().error(String.format("Found deadlock! otherLocked = %s", _otherLocked));
+        logger().debug(String.format("Found deadlock! otherLocked = %s", _otherLocked));
         if (!getState().locked) {
             if (m.isSuspended() && !_otherLocked) _otherLocked = true;
             else if (!m.isSuspended() && _otherLocked) _otherLocked = false;
             else logger().error(String.format("Wrong deadlock situation(1): m.suspended = %s, otherLocked = %s", m.isSuspended(), _otherLocked));
         }
         else logger().error("Wrong deadlock situation(2)");
-    }
+    }*/
 
     @Override
     public scala.collection.immutable.Map<Category, Object> stopModelling() {
