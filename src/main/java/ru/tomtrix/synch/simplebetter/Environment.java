@@ -2,6 +2,7 @@ package ru.tomtrix.synch.simplebetter;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import ru.tomtrix.synch.structures.*;
 
 /**
  * Environment
@@ -15,19 +16,23 @@ public abstract class Environment extends Agent {
         super(name);
     }
 
-    public void setVariable(Event event) {
-        _variables.put(event.arg.split("#")[0], event.arg.split("#")[1]);
+    public void setVariable(TimeEvent event) {
+        String arg = event.event().userdata().toString();
+        _variables.put(arg.split("#")[0], arg.split("#")[1]);
     }
 
-    public void checkVariable(Event event) {
-        addEvents(new Event(event.t, event.author, "variableIs", String.format("%s#%s", event.arg, _variables.get(event.arg)), _name));
+    public void checkVariable(TimeEvent event) {
+        String arg = event.event().userdata().toString();
+        addEvents(new TimeEvent(event.t(), new AgentEvent(_name, event.event().agens(), "variableIs").withData(String.format("%s#%s", arg, _variables.get(arg)))));
     }
 
-    public void incVariable(Event event) {
-        _variables.put(event.arg, (int) _variables.get(event.arg) + 1);
+    public void incVariable(TimeEvent event) {
+        String arg = event.event().userdata().toString();
+        _variables.put(arg, (int) _variables.get(arg) + 1);
     }
 
-    public void decVariable(Event event) {
-        _variables.put(event.arg, (int) _variables.get(event.arg) - 1);
+    public void decVariable(TimeEvent event) {
+        String arg = event.event().userdata().toString();
+        _variables.put(arg, (int) _variables.get(arg) - 1);
     }
 }

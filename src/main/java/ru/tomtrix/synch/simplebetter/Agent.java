@@ -1,6 +1,8 @@
 package ru.tomtrix.synch.simplebetter;
 
 import java.util.*;
+
+import ru.tomtrix.synch.structures.TimeEvent;
 import scala.Serializable;
 
 /**
@@ -14,12 +16,12 @@ public abstract class Agent implements Serializable {
         return _random.nextBoolean();
     }
 
-    public static double rand(int n) {
-        return _random.nextInt(n) + Double.valueOf(((Double)_random.nextDouble()).toString().substring(0, 4));
+    public static float rand(int n) {
+        return _random.nextInt(n) + _random.nextFloat();
     }
 
     public final String _name;
-    public List<Event> _events = Collections.synchronizedList(new ArrayList<Event>());
+    public List<TimeEvent> _events = Collections.synchronizedList(new ArrayList<TimeEvent>());
 
     public Agent(String name) {
         _name = name;
@@ -27,20 +29,20 @@ public abstract class Agent implements Serializable {
 
     public abstract void init();
 
-    public void addEvents(Event ... events) {
+    public void addEvents(TimeEvent ... events) {
         addEvents(Arrays.asList(events));
     }
 
-    synchronized public void addEvents(Collection<Event> events) {
+    synchronized public void addEvents(Collection<TimeEvent> events) {
         _events.addAll(events);
         Collections.sort(_events);
     }
 
-    synchronized public Double getCurrentTimestamp() {
-        return _events.isEmpty() ? null : _events.get(0).t;
+    synchronized public Float getCurrentTimestamp() {
+        return _events.isEmpty() ? null : _events.get(0).t();
     }
 
-    synchronized public Event popEvent() {
+    synchronized public TimeEvent popEvent() {
         return _events.remove(0);
     }
 

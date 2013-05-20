@@ -1,5 +1,6 @@
 package ru.tomtrix.synch.example;
 
+import ru.tomtrix.synch.structures.*;
 import ru.tomtrix.synch.simplebetter.*;
 
 @SuppressWarnings("unused")
@@ -13,20 +14,20 @@ public class Cashier1 extends Agent {
 
     @Override
     public void init() {
-        addEvents(new Event(75 + rand(10), _name, "goWC", "", _name));
+        addEvents(new TimeEvent(75 + rand(10), new AgentEvent(_name, _name, "goWC")));
     }
 
-    public void goWC(Event event) {
-        addEvents(new Event(event.t, "SuperMarket", "setVariable", isAvailable + "#false", _name),
-                  new Event(event.t + rand(2), _name, "goBack", "", _name));
+    public void goWC(TimeEvent event) {
+        addEvents(new TimeEvent(event.t(), new AgentEvent(_name, "SuperMarket", "setVariable").withData(isAvailable + "#false")),
+                  new TimeEvent(event.t() + rand(2), new AgentEvent(_name, _name, "goBack")));
     }
 
-    public void goBack(Event event) {
-        addEvents(new Event(event.t, "SuperMarket", "setVariable", isAvailable + "#true", _name));
+    public void goBack(TimeEvent event) {
+        addEvents(new TimeEvent(event.t(), new AgentEvent(_name, "SuperMarket", "setVariable").withData(isAvailable + "#true")));
     }
 
-    public void servePurchaser(Event event) {
-        addEvents(new Event(event.t, "SuperMarket", "incVariable", event.arg.equals("cash") ? "TotalCash" : "TotalCashless", _name),
-                  new Event(event.t + 0.5 + rand(2), event.author, "accepted", "", _name));
+    public void servePurchaser(TimeEvent event) {
+        addEvents(new TimeEvent(event.t(), new AgentEvent(_name, "SuperMarket", "incVariable").withData(event.event().userdata().equals("cash") ? "TotalCash" : "TotalCashless")),
+                  new TimeEvent(event.t() + 0.5f + rand(2), new AgentEvent(_name, event.event().agens(), "accepted")));
     }
 }

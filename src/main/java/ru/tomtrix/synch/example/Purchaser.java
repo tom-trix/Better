@@ -1,6 +1,7 @@
 package ru.tomtrix.synch.example;
 
 import java.util.*;
+import ru.tomtrix.synch.structures.*;
 import ru.tomtrix.synch.simplebetter.*;
 
 @SuppressWarnings("unused")
@@ -14,32 +15,32 @@ public class Purchaser extends Agent {
 
     @Override
     public void init() {
-        addEvents(new Event(5 + rand(30), _name, "appear", "", _name));
+        addEvents(new TimeEvent(5 + rand(30), new AgentEvent(_name, _name, "appear")));
     }
 
-    public void appear(Event event) {
+    public void appear(TimeEvent event) {
         _tasteForTheft = rand(1)/2;
-        addEvents(new Event(event.t + rand(1), "SuperMarket", "incVariable", "TotalPurchasers", _name),
-                new Event(event.t + rand(1), "SuperMarket", "incVariable", "Purchasers", _name),
-                new Event(event.t + 1 + rand(5), _name, "bringGoods", "", _name));
+        addEvents(new TimeEvent(event.t() + rand(1), new AgentEvent(_name, "SuperMarket", "incVariable").withData("TotalPurchasers")),
+                  new TimeEvent(event.t() + rand(1), new AgentEvent(_name, "SuperMarket", "incVariable").withData("Purchasers")),
+                  new TimeEvent(event.t() + 1 + rand(5), new AgentEvent(_name, _name, "bringGoods")));
     }
 
-    public void bringGoods(Event event) {
-        List<Event> events = new ArrayList<>(Arrays.asList(new Event(event.t + 1 + rand(5), _name, rand(1)>0.8 ? "goToCashdesk" : "bringGoods", "", _name)));
+    public void bringGoods(TimeEvent event) {
+        List<TimeEvent> events = new ArrayList<>(Arrays.asList(new TimeEvent(event.t() + 1 + rand(5), new AgentEvent(_name, _name, rand(1)>0.8 ? "goToCashdesk" : "bringGoods"))));
         if (rand(1)*_tasteForTheft > 0.35)
             events.addAll(Arrays.asList(
-                    new Event(event.t + rand(1), "SuperMarket", "incVariable", "Thefts", _name),
-                    new Event(event.t +1, "Guard", "suspect", "", _name)));
+                    new TimeEvent(event.t() + rand(1), new AgentEvent(_name, "SuperMarket", "incVariable").withData("Thefts")),
+                    new TimeEvent(event.t() +1, new AgentEvent(_name, "Guard", "suspect"))));
         addEvents(events);
     }
 
-    public void goToCashdesk(Event event) {
+    public void goToCashdesk(TimeEvent event) {
         String cashier = String.format("Cashier%d", rand() ? 1 : 2);
-        addEvents(new Event(event.t + rand(1), cashier, "servePurchaser", "cash" + (rand() ? "less" : ""), _name));
+        addEvents(new TimeEvent(event.t() + rand(1), new AgentEvent(_name, cashier, "servePurchaser").withData("cash" + (rand() ? "less" : ""))));
     }
 
-    public void accepted(Event event) {
-        addEvents(new Event(event.t + rand(1), "SuperMarket", "decVariable", "Purchasers", _name),
-                new Event(event.t + 5 + rand(30), _name, "appear", "", _name));
+    public void accepted(TimeEvent event) {
+        addEvents(new TimeEvent(event.t() + rand(1), new AgentEvent(_name, "SuperMarket", "decVariable").withData("Purchasers")),
+                  new TimeEvent(event.t() + 5 + rand(30), new AgentEvent(_name, _name, "appear")));
     }
 }
