@@ -1,6 +1,8 @@
 package ru.tomtrix.synch.example;
 
+import java.util.*;
 import ru.tomtrix.synch.simplebetter.*;
+import ru.tomtrix.synch.structures.TimeEvent;
 
 /**
  * Environment
@@ -12,7 +14,7 @@ public class SuperMarket extends Environment {
     }
 
     @Override
-    public void init() {
+    public Collection<TimeEvent> init() {
         _variables.put("Door", "closed");
         _variables.put("TotalCash", 0);
         _variables.put("TotalCashless", 0);
@@ -22,5 +24,6 @@ public class SuperMarket extends Environment {
         _variables.put("GuardAvailable", true);
         _variables.put("Cashier1isAvailable", true);
         _variables.put("Cashier2isAvailable", true);
+        return Collections.emptyList();
     }
 }

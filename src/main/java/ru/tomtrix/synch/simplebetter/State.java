@@ -24,7 +24,7 @@ public class State implements Serializable {
     public String toString() {
         int total = 0;
         for (Agent agent : agents.values())
-            total += agent._events.size();
+            total += agent.events.size();
         return String.format("State #%d; Total events: %d", fingerprint, total);
     }
 }

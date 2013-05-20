@@ -1,5 +1,7 @@
 package ru.tomtrix.synch.simplebetter;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.*;
@@ -60,12 +62,7 @@ public class AbstractModel extends JavaModel<State> {
                    statEventHandled();
                    if (isRemote)
                        sendMessage(remoteActorname, new EventMessage(actorname(), event));
-                   else if (getState().agents.containsKey(event.event().patiens()))
-                       try {
-                           Agent recipient = getState().agents.get(event.event().patiens());
-                           recipient.getClass().getMethod(event.event().predicate(), TimeEvent.class).invoke(recipient, event);
-                       } catch (Exception e) {logger().error("Error in reflection", e);}
-                   else logger().error(String.format("No agent found (%s)", event.event().patiens()));
+                   else getState().agents.get(event.event().patiens()).addEvents(runAgent(event));
                    getState().fingerprint += 1;
                    registerEvent(event, isRemote, getState().remoteAgents.containsKey(event.event().agens()), remoteActorname);
                    addTime(event);
@@ -96,8 +93,9 @@ public class AbstractModel extends JavaModel<State> {
     }
 
     @Override
-    public AgentEvent[] simulateStep(AgentEvent e) {
-        return new AgentEvent[0];
+    public TimeEvent[] simulateStep(TimeEvent e) {
+        Collection<TimeEvent> newEvents = runAgent(e);
+        return newEvents.toArray(new TimeEvent[newEvents.size()]);
     }
 
     /*@Override
@@ -115,5 +113,16 @@ public class AbstractModel extends JavaModel<State> {
     public scala.collection.immutable.Map<Category, Object> stopModelling() {
         _timer.cancel();
         return super.stopModelling();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Collection<TimeEvent> runAgent(TimeEvent event) {
+        Collection<TimeEvent> result = Collections.emptyList();
+        try {
+            Agent recipient = getState().agents.get(event.event().patiens());
+            Object newEvents = recipient.getClass().getMethod(event.event().predicate(), TimeEvent.class).invoke(recipient, event);
+            result = (Collection<TimeEvent>) newEvents;
+        } catch (Exception e) {logger().error("Error in reflection", e);}
+        return result;
     }
 }

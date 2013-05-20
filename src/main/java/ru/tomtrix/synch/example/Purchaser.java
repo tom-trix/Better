@@ -14,33 +14,33 @@ public class Purchaser extends Agent {
     }
 
     @Override
-    public void init() {
-        addEvents(new TimeEvent(5 + rand(30), new AgentEvent(_name, _name, "appear")));
+    public Collection<TimeEvent> init() {
+        return Arrays.asList(new TimeEvent(5 + rand(30), new AgentEvent(name, name, "appear")));
     }
 
-    public void appear(TimeEvent event) {
+    public Collection<TimeEvent> appear(TimeEvent event) {
         _tasteForTheft = rand(1)/2;
-        addEvents(new TimeEvent(event.t() + rand(1), new AgentEvent(_name, "SuperMarket", "incVariable").withData("TotalPurchasers")),
-                  new TimeEvent(event.t() + rand(1), new AgentEvent(_name, "SuperMarket", "incVariable").withData("Purchasers")),
-                  new TimeEvent(event.t() + 1 + rand(5), new AgentEvent(_name, _name, "bringGoods")));
+        return Arrays.asList(new TimeEvent(event.t() + rand(1), new AgentEvent(name, "SuperMarket", "incVariable").withData("TotalPurchasers")),
+                             new TimeEvent(event.t() + rand(1), new AgentEvent(name, "SuperMarket", "incVariable").withData("Purchasers")),
+                             new TimeEvent(event.t() + 1 + rand(5), new AgentEvent(name, name, "bringGoods")));
     }
 
-    public void bringGoods(TimeEvent event) {
-        List<TimeEvent> events = new ArrayList<>(Arrays.asList(new TimeEvent(event.t() + 1 + rand(5), new AgentEvent(_name, _name, rand(1)>0.8 ? "goToCashdesk" : "bringGoods"))));
+    public Collection<TimeEvent> bringGoods(TimeEvent event) {
+        List<TimeEvent> events = new ArrayList<>(Arrays.asList(new TimeEvent(event.t() + 1 + rand(5), new AgentEvent(name, name, rand(1)>0.8 ? "goToCashdesk" : "bringGoods"))));
         if (rand(1)*_tasteForTheft > 0.35)
             events.addAll(Arrays.asList(
-                    new TimeEvent(event.t() + rand(1), new AgentEvent(_name, "SuperMarket", "incVariable").withData("Thefts")),
-                    new TimeEvent(event.t() +1, new AgentEvent(_name, "Guard", "suspect"))));
-        addEvents(events);
+                    new TimeEvent(event.t() + rand(1), new AgentEvent(name, "SuperMarket", "incVariable").withData("Thefts")),
+                    new TimeEvent(event.t() +1, new AgentEvent(name, "Guard", "suspect"))));
+        return events;
     }
 
-    public void goToCashdesk(TimeEvent event) {
+    public Collection<TimeEvent> goToCashdesk(TimeEvent event) {
         String cashier = String.format("Cashier%d", rand() ? 1 : 2);
-        addEvents(new TimeEvent(event.t() + rand(1), new AgentEvent(_name, cashier, "servePurchaser").withData("cash" + (rand() ? "less" : ""))));
+        return Arrays.asList(new TimeEvent(event.t() + rand(1), new AgentEvent(name, cashier, "servePurchaser").withData("cash" + (rand() ? "less" : ""))));
     }
 
-    public void accepted(TimeEvent event) {
-        addEvents(new TimeEvent(event.t() + rand(1), new AgentEvent(_name, "SuperMarket", "decVariable").withData("Purchasers")),
-                  new TimeEvent(event.t() + 5 + rand(30), new AgentEvent(_name, _name, "appear")));
+    public Collection<TimeEvent> accepted(TimeEvent event) {
+        return Arrays.asList(new TimeEvent(event.t() + rand(1), new AgentEvent(name, "SuperMarket", "decVariable").withData("Purchasers")),
+                             new TimeEvent(event.t() + 5 + rand(30), new AgentEvent(name, name, "appear")));
     }
 }

@@ -20,34 +20,30 @@ public abstract class Agent implements Serializable {
         return _random.nextInt(n) + _random.nextFloat();
     }
 
-    public final String _name;
-    public List<TimeEvent> _events = Collections.synchronizedList(new ArrayList<TimeEvent>());
+    protected final String name;
+    List<TimeEvent> events = Collections.synchronizedList(new ArrayList<TimeEvent>());
 
     public Agent(String name) {
-        _name = name;
+        this.name = name;
     }
 
-    public abstract void init();
+    abstract protected Collection<TimeEvent> init();
 
-    public void addEvents(TimeEvent ... events) {
-        addEvents(Arrays.asList(events));
+    synchronized void addEvents(Collection<TimeEvent> events) {
+        this.events.addAll(events);
+        Collections.sort(this.events);
     }
 
-    synchronized public void addEvents(Collection<TimeEvent> events) {
-        _events.addAll(events);
-        Collections.sort(_events);
+    synchronized Float getCurrentTimestamp() {
+        return events.isEmpty() ? null : events.get(0).t();
     }
 
-    synchronized public Float getCurrentTimestamp() {
-        return _events.isEmpty() ? null : _events.get(0).t();
+    synchronized TimeEvent popEvent() {
+        return events.remove(0);
     }
 
-    synchronized public TimeEvent popEvent() {
-        return _events.remove(0);
-    }
-
-    synchronized public void flush() {
-        _events.clear();
+    synchronized void flush() {
+        events.clear();
         init();
     }
 }

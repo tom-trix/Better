@@ -1,6 +1,6 @@
 package ru.tomtrix.synch.simplebetter;
 
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import ru.tomtrix.synch.structures.*;
 
@@ -16,23 +16,26 @@ public abstract class Environment extends Agent {
         super(name);
     }
 
-    public void setVariable(TimeEvent event) {
+    public Collection<TimeEvent> setVariable(TimeEvent event) {
         String arg = event.event().userdata().toString();
         _variables.put(arg.split("#")[0], arg.split("#")[1]);
+        return Collections.emptyList();
     }
 
-    public void checkVariable(TimeEvent event) {
+    public Collection<TimeEvent> checkVariable(TimeEvent event) {
         String arg = event.event().userdata().toString();
-        addEvents(new TimeEvent(event.t(), new AgentEvent(_name, event.event().agens(), "variableIs").withData(String.format("%s#%s", arg, _variables.get(arg)))));
+        return Arrays.asList(new TimeEvent(event.t(), new AgentEvent(name, event.event().agens(), "variableIs").withData(String.format("%s#%s", arg, _variables.get(arg)))));
     }
 
-    public void incVariable(TimeEvent event) {
+    public Collection<TimeEvent> incVariable(TimeEvent event) {
         String arg = event.event().userdata().toString();
         _variables.put(arg, (int) _variables.get(arg) + 1);
+        return Collections.emptyList();
     }
 
-    public void decVariable(TimeEvent event) {
+    public Collection<TimeEvent> decVariable(TimeEvent event) {
         String arg = event.event().userdata().toString();
         _variables.put(arg, (int) _variables.get(arg) - 1);
+        return Collections.emptyList();
     }
 }
