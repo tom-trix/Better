@@ -118,11 +118,12 @@ public class AbstractModel extends JavaModel<State> {
     @SuppressWarnings("unchecked")
     private Collection<TimeEvent> runAgent(TimeEvent event) {
         Collection<TimeEvent> result = Collections.emptyList();
-        try {
-            Agent recipient = getState().agents.get(event.event().patiens());
-            Object newEvents = recipient.getClass().getMethod(event.event().predicate(), TimeEvent.class).invoke(recipient, event);
-            result = (Collection<TimeEvent>) newEvents;
-        } catch (Exception e) {logger().error("Error in reflection", e);}
+        if (getState().agents.containsKey(event.event().patiens()))
+            try {
+                Agent recipient = getState().agents.get(event.event().patiens());
+                Object newEvents = recipient.getClass().getMethod(event.event().predicate(), TimeEvent.class).invoke(recipient, event);
+                result = (Collection<TimeEvent>) newEvents;
+            } catch (Exception e) {logger().error("Error in reflection", e);}
         return result;
     }
 }

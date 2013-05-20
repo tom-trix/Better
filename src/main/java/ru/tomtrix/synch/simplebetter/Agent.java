@@ -44,6 +44,6 @@ public abstract class Agent implements Serializable {
 
     synchronized void flush() {
         events.clear();
-        init();
+        addEvents(init());
     }
 }
