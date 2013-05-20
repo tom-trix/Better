@@ -54,19 +54,20 @@ public class AbstractModel extends JavaModel<State> {
                    else event = cur_agent.popEvent();
 
                    // обработка события
-                   boolean isRemote = getState().remoteAgents.containsKey(event.event().agens());
+                   boolean isRemote = getState().remoteAgents.containsKey(event.event().patiens());
+                   String remoteActorname = getState().remoteAgents.get(event.event().patiens());
                    logger().info(String.format("Found event: %s", event));
                    statEventHandled();
                    if (isRemote)
-                       sendMessage(getState().remoteAgents.get(event.event().agens()), new EventMessage(actorname(), event));
-                   else if (getState().agents.containsKey(event.event().agens()))
+                       sendMessage(remoteActorname, new EventMessage(actorname(), event));
+                   else if (getState().agents.containsKey(event.event().patiens()))
                        try {
-                           Agent receiver = getState().agents.get(event.event().agens());
-                           receiver.getClass().getMethod(event.event().predicate(), TimeEvent.class).invoke(receiver, event);
+                           Agent recipient = getState().agents.get(event.event().patiens());
+                           recipient.getClass().getMethod(event.event().predicate(), TimeEvent.class).invoke(recipient, event);
                        } catch (Exception e) {logger().error("Error in reflection", e);}
-                   else logger().error(String.format("No agent found (%s)", event.event().agens()));
+                   else logger().error(String.format("No agent found (%s)", event.event().patiens()));
                    getState().fingerprint += 1;
-                   registerEvent(event, isRemote, !getState().agents.containsKey(event.event().agens()), getState().remoteAgents.get(event.event().agens()));
+                   registerEvent(event, isRemote, getState().remoteAgents.containsKey(event.event().agens()), remoteActorname);
                    addTime(event);
                }
             }
