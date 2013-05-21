@@ -8,7 +8,7 @@
         <maven.compiler.source>${project.custom.java.version}</maven.compiler.source>
         <maven.compiler.target>${project.custom.java.version}</maven.compiler.target>
         <better.version>1.6.4</better.version>
-        <synch_algorithms.version>1.9.4</synch_algorithms.version>
+        <synch_algorithms.version>1.9.6</synch_algorithms.version>
     </properties>
 
     <groupId>ru.tomtrix.synch</groupId>
