@@ -8,6 +8,7 @@ import ru.tomtrix.synch.simplebetter.*;
 public class Cashier1 extends Agent {
 
     protected String isAvailable = "Cashier1Available";
+    protected boolean elation = true;
 
     public Cashier1(String name) {
         super(name);
@@ -28,7 +29,8 @@ public class Cashier1 extends Agent {
     }
 
     public Collection<TimeEvent> servePurchaser(TimeEvent event) {
+        elation = !elation;
         return Arrays.asList(new TimeEvent(event.t(), new AgentEvent(name, "SuperMarket", "incVariable").withData(event.event().userdata().equals("cash") ? "TotalCash" : "TotalCashless")),
-                             new TimeEvent(event.t() + 0.5f + rand(2), new AgentEvent(name, event.event().agens(), "accepted")));
+                             new TimeEvent(event.t() + 0.5f + rand(elation ? 1 : 3), new AgentEvent(name, event.event().agens(), "accepted")));
     }
 }

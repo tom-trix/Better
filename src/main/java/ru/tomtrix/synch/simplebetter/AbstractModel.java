@@ -29,8 +29,6 @@ public class AbstractModel extends JavaModel<State> {
             @Override
             public void run() {
                synchronized (self) {
-                   if (_locked) {logger().debug("I am locked!"); return;}
-
                    // поиск агента с минимальной временной меткой
                    Agent cur_agent = null;
                    for (Agent agent : getState().agents.values()) {
@@ -46,6 +44,12 @@ public class AbstractModel extends JavaModel<State> {
                    try {
                        t2 = peekMessage().get().t();
                    } catch (Exception ignored) {}
+
+                   // посмотрим, не нужна ли блокировка
+                   if ((t1 != null && t1 < getTime()) || (t2 != null && t2 < getTime())) {
+                       logger().debug("Зафиксировано событие из прошлого");
+                       if (_locked) logger().debug("Оно будет обработано вопреки блокировке");
+                   } else if (_locked) {logger().debug("I am locked!"); return;}
 
                    // выборка события с меньшей временной меткой
                    TimeEvent event;
