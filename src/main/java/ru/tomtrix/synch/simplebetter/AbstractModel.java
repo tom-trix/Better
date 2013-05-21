@@ -25,7 +25,7 @@ public class AbstractModel extends JavaModel<State> {
         _locked = false;
         // запускаем таймер
         final Model<State> self = this;
-        _timer = system().scheduler().schedule(Duration.Zero(), Duration.create(20, TimeUnit.MILLISECONDS), new Runnable() {
+        _timer = system().scheduler().schedule(Duration.create(10, TimeUnit.MILLISECONDS), Duration.create(20, TimeUnit.MILLISECONDS), new Runnable() {
             @Override
             public void run() {
                synchronized (self) {
@@ -96,6 +96,11 @@ public class AbstractModel extends JavaModel<State> {
     public TimeEvent[] simulateStep(TimeEvent e) {
         Collection<TimeEvent> newEvents = runAgent(e);
         return newEvents.toArray(new TimeEvent[newEvents.size()]);
+    }
+
+    @Override
+    public boolean isLocal(AgentEvent e) {
+        return getState().agents.containsKey(e.patiens());
     }
 
     /*@Override

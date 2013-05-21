@@ -14,12 +14,12 @@ public class Guard extends Agent {
     @Override
     public Collection<TimeEvent> init() {
         return Arrays.asList(new TimeEvent(5, new AgentEvent(name, "SuperMarket", "setVariable").withData("Door#open")),
-                             new TimeEvent(25 + rand(10), new AgentEvent(name, "Cashier2", "requestToSmoke")),
+                             new TimeEvent(15 + rand(15), new AgentEvent(name, "Cashier2", "requestToSmoke")),
                              new TimeEvent(65 + rand(9), new AgentEvent(name, name, "goWC")));
     }
 
     public Collection<TimeEvent> responseToSmoke(TimeEvent event) {
-        List<TimeEvent> events = new ArrayList<>(Arrays.asList(new TimeEvent(event.t() + 35 + rand(10), new AgentEvent(name, "Cashier2", "requestToSmoke"))));
+        List<TimeEvent> events = new ArrayList<>(Arrays.asList(new TimeEvent(event.t() + 15 + rand(15), new AgentEvent(name, "Cashier2", "requestToSmoke"))));
         if (event.event().userdata().equals("true") || rand())
             events.addAll(Arrays.asList(
                 new TimeEvent(event.t() + rand(1), new AgentEvent(name, "SuperMarket", "setVariable").withData("GuardAvailable#false")),
