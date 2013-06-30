@@ -20,17 +20,17 @@ public class Cashier1 extends Agent {
     }
 
     public Collection<TimeEvent> goWC(TimeEvent event) {
-        return Arrays.asList(new TimeEvent(event.t(), new AgentEvent(name, "SuperMarket", "setVariable").withData(isAvailable + "#false")),
-                             new TimeEvent(event.t() + rand(2), new AgentEvent(name, name, "goBack")));
+        return Arrays.asList(new TimeEvent(event.t() + rand(1), new AgentEvent(name, "SuperMarket", "setVariable").withData(isAvailable + "#false")),
+                             new TimeEvent(event.t() + 5 +rand(4), new AgentEvent(name, name, "goBack")));
     }
 
     public Collection<TimeEvent> goBack(TimeEvent event) {
-        return Arrays.asList(new TimeEvent(event.t(), new AgentEvent(name, "SuperMarket", "setVariable").withData(isAvailable + "#true")));
+        return Arrays.asList(new TimeEvent(event.t() + rand(1), new AgentEvent(name, "SuperMarket", "setVariable").withData(isAvailable + "#true")));
     }
 
     public Collection<TimeEvent> servePurchaser(TimeEvent event) {
         elation = !elation;
-        return Arrays.asList(new TimeEvent(event.t(), new AgentEvent(name, "SuperMarket", "incVariable").withData(event.event().userdata().equals("cash") ? "TotalCash" : "TotalCashless")),
-                             new TimeEvent(event.t() + 0.5f + rand(elation ? 1 : 3), new AgentEvent(name, event.event().agens(), "accepted")));
+        return Arrays.asList(new TimeEvent(event.t() + rand(1), new AgentEvent(name, "SuperMarket", "incVariable").withData(event.event().userdata().equals("cash") ? "TotalCash" : "TotalCashless")),
+                             new TimeEvent(event.t() + 1.5f + rand(elation ? 1 : 3), new AgentEvent(name, event.event().agens(), "accepted")));
     }
 }

@@ -30,7 +30,7 @@ public class Purchaser extends Agent {
         if (rand(1)*_tasteForTheft > 0.35)
             events.addAll(Arrays.asList(
                     new TimeEvent(event.t() + rand(1), new AgentEvent(name, "SuperMarket", "incVariable").withData("Thefts")),
-                    new TimeEvent(event.t() +1, new AgentEvent(name, "Guard", "suspect"))));
+                    new TimeEvent(event.t() + 1, new AgentEvent(name, "Guard", "suspect"))));
         return events;
     }
 
